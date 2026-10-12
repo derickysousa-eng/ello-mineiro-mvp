@@ -63,14 +63,18 @@ Antes de iniciar o código do backend, há dois pontos em aberto para avaliar ou
 
 ## 5. Próximo passo após fechar os pontos acima
 
-Iniciar a implementação do backend em Python + FastAPI, na seguinte ordem incremental:
-1. Configuração de ambiente e dependências (`requirements.txt`, `.env.example`).
-2. Conexão com o banco (`app/db.py`) e rota `GET /health`.
-3. Montagem dos arquivos estáticos (`StaticFiles`) servindo `frontend/index.html` em `GET /`.
+A Etapa 1 (Banco Local no XAMPP + DBeaver + `.env` + conta TiDB) foi concluída com sucesso (ver [docs/04-guia-execucao-e-ambiente.md](04-guia-execucao-e-ambiente.md)).
+
+A implementação do backend em Python + FastAPI seguirá a ordem:
+1. Configuração de dependências (`requirements.txt`).
+2. Conexão com o banco (`app/db.py`) lendo o `.env` e rota `GET /health`.
+3. Camada de segurança e hashing (`app/security.py`).
 4. Repositórios SQL (`app/repositories/usuarios.py`, `enderecos.py`).
-5. Rotas de autenticação (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`).
-6. Rota protegida `GET /api/me` lendo token do cookie `HttpOnly`.
-7. Telas do front-end (`index.html`, `cadastro.html`, `home.html`) consumindo as rotas.
+5. Rotas de autenticação (`app/routers/auth.py`, `me.py`).
+6. Montagem dos arquivos estáticos e páginas em `app/main.py`.
+7. Testes de API isolados (Swagger em `/docs` e Postman).
+8. Integração das páginas HTML do front-end (`index.html`, `cadastro.html`, `home.html`).
+9. Deploy em produção (TiDB Cloud + Render).
 
 ## 6. Estrutura de pastas do projeto
 

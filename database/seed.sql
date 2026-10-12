@@ -36,7 +36,6 @@ CREATE TABLE Usuarios (
     telefone VARCHAR(11),                    -- Só dígitos: DDD + celular (11 dígitos, ex.: 31999998888). Validado no backend
     telefone_sec VARCHAR(11),                -- Idem telefone
     ativo BOOL NOT NULL DEFAULT TRUE,        -- Exclusão lógica (RN03)
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (permissao_nome) REFERENCES Permissoes(nome_permissao) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

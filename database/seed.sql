@@ -33,8 +33,8 @@ CREATE TABLE Usuarios (
     cpf CHAR(11) UNIQUE,                     -- Opcional no cadastro público (LGPD); só dígitos
     rg VARCHAR(30) UNIQUE,                   -- Opcional no cadastro público (LGPD)
     data_nasc DATE,
-    telefone VARCHAR(15),
-    telefone_sec VARCHAR(15),
+    telefone VARCHAR(11),                    -- Só dígitos: DDD + celular (11 dígitos, ex.: 31999998888). Validado no backend
+    telefone_sec VARCHAR(11),                -- Idem telefone
     ativo BOOL NOT NULL DEFAULT TRUE,        -- Exclusão lógica (RN03)
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (permissao_nome) REFERENCES Permissoes(nome_permissao) ON UPDATE CASCADE

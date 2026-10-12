@@ -25,7 +25,7 @@
 | RF01 | O sistema deve permitir cadastrar um usuário com: nome, e-mail, `user_login` (nome de usuário escolhido por ele), senha e dados pessoais opcionais (CPF, RG, nascimento, gênero, telefones). **O formulário não oferece escolha de perfil** | Alta |
 | RF02 | O sistema deve permitir cadastrar ao menos um endereço associado ao usuário | Média |
 | RF03 | O sistema deve validar unicidade de `user_login`, `email`, `cpf` e `rg` e retornar erro claro em caso de duplicidade | Alta |
-| RF04 | O sistema deve validar formato de e-mail, CPF (dígitos verificadores), CEP, UF e telefone | Alta |
+| RF04 | O sistema deve validar formato de e-mail, CPF (dígitos verificadores), CEP, UF e telefone (exatamente 11 dígitos numéricos: DDD + celular; o front envia só dígitos, sem máscara) | Alta |
 | RF05 | O usuário deve poder fazer login com `user_login` **ou** `email` + senha | Alta |
 | RF06 | Em login válido, a API deve emitir um token de acesso (JWT) com expiração, entregue **somente** em cookie `HttpOnly` via `Set-Cookie` (o token **não** aparece no corpo da resposta) | Alta |
 | RF07 | Em login inválido, a API deve responder com mensagem genérica (sem revelar se o usuário existe) | Alta |
@@ -128,8 +128,8 @@ Set-Cookie: access_token=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0
 | Comentário de `user_login` | **Feito:** "nome de usuário escolhido pelo usuário" |
 | `Permissoes` com PK textual | Mantida (ok para MVP; `ON UPDATE CASCADE` já mitiga) |
 | `cpf`, `rg` UNIQUE e nullable | Mantidos opcionais (LGPD, doc 03 §6). MySQL permite vários NULL |
-| `telefone VARCHAR(15)` | Mantido. **Em aberto:** padronizar só dígitos |
-| `atualizado_em` / `ultimo_login` | **Em aberto** (opcional) |
+| `telefone VARCHAR(11)` | **Decidido:** só dígitos, DDD + número (11). Aplicado em `telefone` e `telefone_sec` |
+| `atualizado_em` / `ultimo_login` | **Decidido:** fora do MVP (previstos como auditoria futura, doc 03 §7) |
 | `Endereco.situacao` | **Feito:** `NOT NULL DEFAULT 'ATIVO'` + `CHECK (situacao IN ('ATIVO','INATIVO'))`. O backend também valida (o `CHECK` só é aplicado no MySQL 8.0.16+; no TiDB depende de `tidb_enable_check_constraint`) |
 | Índices | `user_login` e `email` já têm índice via UNIQUE |
 | Charset | **Feito:** tabelas com `utf8mb4` / `utf8mb4_unicode_ci` |

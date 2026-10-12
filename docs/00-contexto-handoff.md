@@ -50,10 +50,10 @@ Tabelas do banco atual (`database/seed.sql`): `Permissoes`, `Usuarios`, `Enderec
 Antes de iniciar o código do backend, há dois pontos em aberto para avaliar ou confirmar:
 
 ### 4.1. Colunas opcionais em `database/seed.sql`
-- **`atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`** na tabela `Usuarios`: rastreia quando o cadastro foi alterado.
-- **`ultimo_login DATETIME NULL`** na tabela `Usuarios`: atualizado no login com sucesso para fins de auditoria/suporte.
-- **Padronização de telefone**: manter `VARCHAR(15)` ou restringir a `VARCHAR(11)` (apenas dígitos numéricos `DDD + número`).
-> *Observação:* O `seed.sql` atual já é totalmente funcional e suficiente para o MVP. Se o grupo preferir simplicidade, pode-se manter como está.
+- **`atualizado_em`** e **`ultimo_login`** (opcionais, descritos abaixo): **decidido não inserir no MVP** (2026-10-12). A análise de complexidade está na conversa e pode ser retomada numa fase futura (ver doc 03, seção 7: auditoria).
+  - `atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`: rastreia quando o cadastro foi alterado.
+  - `ultimo_login DATETIME NULL`: atualizado no login com sucesso para auditoria/suporte.
+- **Padronização de telefone: decidido** (2026-10-12). `telefone` e `telefone_sec` passam a `VARCHAR(11)`, somente dígitos (`DDD + celular`, 11 dígitos). Aplicado em `database/seed.sql` e `01-requisitos.md` (RF04). O backend valida e o front envia sem máscara.
 
 ### 4.2. Estratégia de hospedagem do Banco (MySQL vs PostgreSQL)
 - **Principal:** MySQL no **TiDB Cloud Serverless** (compatível com MySQL, mantém 100% da sintaxe do `seed.sql`).

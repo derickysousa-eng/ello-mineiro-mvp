@@ -153,7 +153,7 @@ Esquema em [`database/seed.sql`](database/seed.sql):
 ```
 app/          código FastAPI (main.py, db.py, repositories/, routers/)
 database/     seed.sql (esquema do banco)
-frontend/     index.html, cadastro.html, home.html, static/
+frontend/     index.html, cadastro.html, home.html, static/, test/ (protótipos)
 docs/         requisitos, decisões de arquitetura e regras futuras
 ```
 

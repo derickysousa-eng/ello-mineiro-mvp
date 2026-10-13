@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela de Cadastro</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            background-color: #1A365D;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #cor {
+            width: 1000px;
+            min-height: 700px;
+            background-color: #F8F9FA;
+            display: flex;
+            flex-direction: column; /* Organiza os elementos em coluna (um abaixo do outro) */
+            position: relative;
+            overflow: hidden;
+        }
+
+        #logo {
+            height: 100px;
+            width: 250px;
+
+            vertical-align: middle;
+            margin-left: -80px;
+        }
+
+        header {
+            font-weight: bold;
+            font-size: 40px;
+            color: #1A365D;
+            margin: 20px 0;
+            text-shadow: 1px 1px 2px #1A365D;
+        }
+
+        #i_dados h1 {
+            font-weight: bold;
+            font-size: 25px;
+            text-align: left;
+            margin: 0 0 40px 0;
+            color: #1A365D;
+            text-shadow: 1px 1px 2px #1A365D;
+        }
+
+        main {
+            margin-left: 20px;
+            flex: 1;
+        }
+
+        main label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1A365D;
+        }
+
+        input {
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            height: 25px;
+            width: 60%;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        /* Ajuste para inputs do tipo rádio não ficarem esticados */
+        input[type="radio"] {
+            width: auto;
+            height: auto;
+            display: inline;
+        }
+
+        select {
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1A365D;
+        }
+
+        option {
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        button {
+            height: 50px;
+            width: 300px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: white;
+            background-color: #1A365D;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+
+        footer {
+            width: 100%;
+            font-size: 18px;
+            background-color: #1A365D;
+            color: #F8F9FA;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto; /* Empurra o rodapé para o final do container */
+            border-radius: 0 0 10px 10px;
+        }
+
+        footer h3 {
+            margin: 0 0 10px 0;
+        }
+
+        footer p {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="cor">
+        <main>
+            <header>
+                <h1>Tela de Cadastro <img src="logo.png" alt="logo" id="logo"></h1>
+            </header>
+
+            <div id="i_dados">
+                <h1>Preencha os dados do Aluno(a)</h1>
+            </div>
+
+            <div id="inome">
+                <label for="nome">Digite seu Nome:</label>
+                <input type="text" id="nome">
+            </div>
+
+            <div id="icpf">
+                <label for="cpf">Digite seu cpf:</label>
+                <input type="number" id="cpf">
+            </div>
+
+            <div id="idata_de_nascimento">
+                <label for="data_de_nascimento">Digite sua data de nascimento:</label>
+                <input type="date" id="data_de_nascimento">
+            </div>
+
+            <div id="itelefone">
+                <label for="telefone">Digite seu telefone com DDD:</label>
+                <input type="number" id="telefone">
+            </div>
+
+            <div id="itelefone_wpp">
+                <label for="telefone_wpp">Digite seu telefone de WhatsApp com DDD:</label>
+                <input type="number" id="telefone_wpp">
+            </div>
+
+            <div id="iemail">
+                <label for="email">Digite seu email:</label>
+                <input type="password" id="email">
+            </div>
+
+            <div id="iemailrep">
+                <label for="emailrep">Digite novamente seu email:</label>
+                <input type="password" id="emailrep">
+            </div>
+
+            <div id="icurso">
+                <label for="curso">Escolha um curso:</label>
+                <select id="curso" name="curso">
+                    <option value="vazio"></option>
+                    <option value="Informática">Informatica</option>
+                    <option value="Ingles">Ingles</option>
+                    <option value="Administracão">Administraçao</option>
+                </select>
+            </div>
+
+            <div id="icep">
+                <label for="cep">Digite seu cep:</label>
+                <input type="number" id="cep">
+            </div>
+
+            <div id="iendereco_numero">
+                <label for="endereco_numero">Digite o numero da residencia:</label>
+                <input type="text" id="endereco_numero">
+            </div>
+
+            <div id="icomplemento">
+                <label for="complemento">Complemento:</label>
+                <input type="text" id="complemento">
+            </div>
+
+            <div id="isenha">
+                <label for="senha">Digite sua senha:</label>
+                <input type="text" id="senha">
+            </div>
+
+            <div id="isenharep">
+                <label for="senharep">Repita sua senha:</label>
+                <input type="text" id="senharep">
+            </div>
+
+            <div id="termos_de_uso">
+                <section>
+                    <h1>1. Aceitação e Objeto</h1>
+                    <p>Ao acessar a plataforma, o usuário aceita estes Termos. O serviço destina-se exclusivamente ao provimento de atividades acadêmicas, materiais didáticos e comunicação escolar.</p>
+                </section>
+                <section>
+                    <h1>2. Cadastro e Acesso</h1>
+                    <ul>
+                        <li>Responsabilidade: O usuário é responsável pela veracidade dos dados cadastrados e pelo sigilo de suas credenciais de acesso.</li>
+                        <li>Uso Pessoal: O acesso é individual e intransferível.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>3. Regras de Conduta e Uso Aceitável</h1>
+                    <p>É expressamente proibido:</p>
+                    <ul>
+                        <li>Utilizar a plataforma para fins ilegais, comerciais ou alheios ao contexto educacional.</li>
+                        <li>Publicar conteúdos ofensivos, plagiados, discriminatórios ou que violem direitos autorais.</li>
+                        <li>Tentar burlar sistemas de segurança ou comprometer a estabilidade da rede.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>4. Propriedade Intelectual</h1>
+                    <p>Todo o material didático, marcas e conteúdos disponibilizados pertencem à Escola Técnica Elo de Mineiro (ou a seus licenciantes) e são protegidos por direitos autorais, sendo proibida a reprodução sem autorização prévia.</p>
+                </section>
+                <section>
+                    <h1>5. Privacidade de Dados</h1>
+                    <p>Os dados pessoais coletados serão utilizados unicamente para a gestão acadêmica e administrativa, em conformidade com as normas de proteção de dados vigentes.</p>
+                </section>
+                <section>
+                    <h1>6. Alterações e Suspensão</h1>
+                    <p>A instituição reserva-se o direito de atualizar estes termos e de suspender o acesso do usuário em caso de descumprimento destas regras.</p>
+                    <p>Elo de Mineiro — Projeto Escolar</p>
+                </section>
+
+                <div id="termos_de_usos">
+                    <p>Você aceita os termos?</p>
+                    <label><input type="radio" name="resposta_termos" value="nao" checked> Não</label>
+                    <label><input type="radio" name="resposta_termos" value="sim"> Sim</label>
+                </div>
+
+                <div id="temos_com">
+                    <p>Você aceita receber contatos via WhatsApp e via email?</p>
+                    <label><input type="radio" name="resposta_com" value="nao" checked> Não</label>
+                    <label><input type="radio" name="resposta_com" value="sim"> Sim</label>
+                </div>
+            </div>
+
+            <div id="icadastrar">
+                <button id="cadastrar">Cadastrar</button>
+            </div>
+        </main>
+
+        <footer>
+            <h3>Contatos</h3>
+            <p>E-mail: elomineiro@com</p>
+            <p>Telefone: (31) 99999-9999</p>
+            <p>Instagram: https://www.instagram.com/elomineiro/</p>
+        </footer>
+    </div>
+</body>
+</html>

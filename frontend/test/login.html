@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>login</title>
+   <style>
+    * {
+    box-sizing: border-box;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+    background-color: #1A365D;
+
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+}
+.pagina {
+    width: 1000px;
+    margin-top: 00px;
+}
+
+#cor {
+    width: 1000px;
+    min-height: 700px;
+    position: relative;
+    overflow: hidden;
+
+    background-color: #F8F9FA;
+
+    display: flex;
+    align-items: center;
+
+
+}
+
+/* Área do login */
+header,
+main {
+    width: 50%;
+    margin-left: 60px;
+    position: relative;
+    z-index: 2;
+}
+
+h1 {
+    font-weight: bold;
+    font-size: 40px;
+    text-align: left;
+    color: #1A365D;;
+    margin: 0 0 20px 0;
+    text-shadow: 1px 1px 2px #1A365D;
+}
+
+h2 {
+    font-weight: bold;
+    font-size: 25px;
+    text-align: left;
+    margin: 0 0 40px 0;
+    color: #1A365D;;
+    text-shadow: 1px 1px 2px #1A365D;
+}
+
+main {
+    font-size: 20px;
+    text-align: left;
+}
+
+#login {
+    font-weight: bold;
+    color: #1A365D;
+}
+
+input {
+    border-radius: 10px;
+    height: 50px;
+    width: 300px;
+    color: #1A365D;
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    height: 50px;
+    width: 300px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+#rsenha,
+#cadastra {
+    color: rgb(56, 54, 54);
+    text-align: left;
+}
+
+/* LOGO */
+#logo {
+    height: 60px;
+    width: 100px;
+    position: absolute;
+    margin-left: 15px;
+}
+
+/* IMAGEM DA ESCOLA */
+#escola {
+    position: absolute;
+
+    width: 50%;
+    height: 100%;
+
+    right: 0;
+    top: 0;
+
+    object-fit: cover;
+}
+footer {
+    width: 100%;
+    
+    font-size: 20px;
+
+    background-color: #F8F9FA;
+
+    color: #1A365D;
+
+    text-align: center;
+
+    padding: 20px 0;
+
+    margin-top: 10px;
+
+    border-radius: 0 0 10px 10px;
+}
+
+footer h3 {
+    margin: 0 0 10px 0;
+}
+
+footer p {
+    margin: 5px;
+}
+   </style>
+   </head>
+<body>
+
+    <div class="pagina">
+
+        <div id="cor">
+
+            <div class="conteudo">
+
+                <header>
+                    <h1>
+                        Escola Elo Mineiro
+                        <img src="logo.png" alt="logo.png" id="logo">
+                    </h1>
+
+                    <h2>
+                        Unindo Família, Tradição e o Futuro da Educação.
+                    </h2>
+                </header>
+
+                <main>
+
+                    <p id="login">Login:</p>
+
+                    <p>
+                        <input 
+                            type="text" 
+                            id="matricula"
+                            placeholder="Digite sua matrícula"
+                        >
+                    </p>
+
+                    <p>
+                        <input 
+                            type="password" 
+                            id="senha"
+                            placeholder="Digite sua senha"
+                        >
+                    </p>
+
+                    <p>
+                        <button id="Entrar">Entrar</button>
+                    </p>
+
+                    <p id="rsenha">
+                        <a href="#">Recuperar Senha</a>
+                    </p>
+
+                    <p id="cadastra">
+                        <a href="#">Realizar Matrícula de Aluno</a>
+                    </p>
+
+                </main>
+
+            </div>
+
+            <img src="escola.png" alt="Imagem da escola" id="escola">
+
+        </div>
+
+        <footer>
+
+            <h3>Contatos</h3>
+
+            <p>E-mail: elomineiro@com</p>
+
+            <p>Telefone: (31) 99999-9999</p>
+            <p>Instagram: https://www.instagram.com/elomineiro/</p>
+
+
+        </footer>
+
+    </div>
+
+</body>
+</html>
+

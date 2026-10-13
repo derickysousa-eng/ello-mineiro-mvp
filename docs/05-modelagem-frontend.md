@@ -130,16 +130,25 @@ O formulário de cadastro fornece feedback imediato ao usuário nos eventos `inp
 
 ```
 frontend/
-├── index.html               # Tela de Login (rota "/")
-├── cadastro.html            # Tela de Cadastro (rota "/cadastro")
-├── home.html                # Dashboard autenticado (rota "/home")
-└── static/
-    ├── css/
-    │   └── style.css        # Folha de estilos unificada e responsiva
-    └── js/
-        ├── auth.js          # Lógica de login, cadastro, máscaras e ViaCEP
-        └── home.js          # Guarda de rota do dashboard e logout
+├── index.html               # Tela de Login final (rota "/")
+├── cadastro.html            # Tela de Cadastro final (rota "/cadastro")
+├── home.html                # Dashboard autenticado final (rota "/home")
+├── static/
+│   ├── css/
+│   │   └── style.css        # Folha de estilos unificada e responsiva
+│   ├── js/
+│   │   ├── auth.js          # Lógica de login, cadastro, máscaras e ViaCEP
+│   │   └── home.js          # Guarda de rota do dashboard e logout
+│   └── img/                 # Imagens e logotipos institucionais oficiais
+└── test/                    # Protótipos e referências visuais da equipe (base para adaptação)
+    ├── login.html           # Rascunho inicial da tela de login
+    ├── cadastro.html        # Rascunho inicial do formulário de cadastro
+    ├── index.html           # Rascunho inicial da tela principal / menu
+    ├── logo.png             # Logo preliminar da Escola Ello Mineiro
+    └── escola.png           # Imagem ilustrativa de fachada/escola
 ```
+
+> **Nota sobre o diretório `frontend/test/`:** Contém os rascunhos de layout e imagens criados pela equipe. Durante o desenvolvimento das páginas finais de produção (`index.html`, `cadastro.html`, `home.html`), esses arquivos servirão de base conceitual e visual, sendo adaptados aos padrões de semântica, responsividade e integração com os contratos da API FastAPI.
 
 ---
 

@@ -41,6 +41,7 @@ Com a API e o banco 100% validados, a próxima atuação será focada na constru
    * Formulário com dados pessoais e endereço, máscaras inteligentes (telefone fixo 10 dígitos / celular 11 dígitos, CPF, CEP com envio limpo `\D`), Title Case inteligente para nomes, comboboxes (`genero`, `uf`), omissão de campos de sistema (`ativo`, `situacao`, `tipo`), validações em tempo real e autopreenchimento via **ViaCEP**.
 4. **Tela Home / Dashboard (`frontend/home.html` — `GET /home`):**
    * Guarda de rota (redireciona para `/` se receber 401 de `GET /api/me`), visualização do perfil institucional, endereço cadastrado e botão de Logout.
+   * *Adaptação dos Protótipos:* Utilizar os arquivos e imagens de referência em `frontend/test/` (rascunhos criados pela equipe) como guia visual para construir os layouts definitivos e semânticos.
 
 ---
 
@@ -66,9 +67,10 @@ ello-mineiro-mvp/
 │   ├── dependencies.py                    # Leitura segura de cookie HttpOnly
 │   ├── repositories/                      # usuarios.py e enderecos.py (SQL puro)
 │   └── routers/                           # auth.py e me.py
-├── frontend/                              # Interface web estática
-│   ├── index.html, cadastro.html, home.html
-│   └── static/css, static/js
+├── frontend/                              # Interface web
+│   ├── index.html, cadastro.html, home.html # Telas finais de produção
+│   ├── static/css, static/js              # Estilos e scripts oficiais
+│   └── test/                              # Protótipos e referências visuais da equipe
 ├── test_api.py                            # Bateria automatizada de testes locais
 ├── requirements.txt
 ├── .env.example

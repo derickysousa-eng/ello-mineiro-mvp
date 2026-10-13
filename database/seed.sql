@@ -39,18 +39,18 @@ CREATE TABLE Usuarios (
     FOREIGN KEY (permissao_nome) REFERENCES Permissoes(nome_permissao) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Tabela de Endereço (Relacionamento 1 para N)
+-- 3. Tabela de Endereço (Relacionamento 1 para N - Obrigatório ao menos 1 por usuário)
 CREATE TABLE Endereco (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
-    tipo VARCHAR(20),      -- Ex: 'Residencial', 'Comercial'
-    cep CHAR(8),           -- Só dígitos
-    rua VARCHAR(100),
-    numero VARCHAR(20),
-    bairro VARCHAR(100),
+    tipo VARCHAR(20) NOT NULL DEFAULT 'Residencial', -- 'Residencial', 'Comercial'
+    cep CHAR(8) NOT NULL,                            -- Só dígitos (8)
+    rua VARCHAR(100) NOT NULL,
+    numero VARCHAR(20) NOT NULL,
+    bairro VARCHAR(100) NOT NULL,
     complemento VARCHAR(255),
-    cidade VARCHAR(50),
-    uf CHAR(2),
+    cidade VARCHAR(50) NOT NULL,
+    uf CHAR(2) NOT NULL,
     situacao VARCHAR(10) NOT NULL DEFAULT 'ATIVO',
     CONSTRAINT chk_endereco_situacao CHECK (situacao IN ('ATIVO', 'INATIVO')),
     FOREIGN KEY (usuario_id) REFERENCES Usuarios(id) ON DELETE CASCADE

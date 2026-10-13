@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "Escola Particular Ello Mineiro — API (MVP)",
+    "description": "Collection oficial do Postman para testes das rotas de autenticação, monitoramento e gestão de usuários.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Monitoramento",
+      "item": [
+        {
+          "name": "Health Check (Saúde da API e Banco)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica se a API está online e se a conexão com o MySQL está respondendo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autenticação",
+      "item": [
+        {
+          "name": "Cadastrar Usuário (Register)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_login\": \"carlos.silva\",\n  \"email\": \"carlos.silva@exemplo.com\",\n  \"senha\": \"SenhaForte123!\",\n  \"nome\": \"Carlos da Silva\",\n  \"genero\": \"Masculino\",\n  \"cpf\": \"12345678901\",\n  \"rg\": \"MG12345678\",\n  \"data_nasc\": \"2002-05-20\",\n  \"telefone\": \"31999998888\",\n  \"telefone_sec\": \"31988887777\",\n  \"endereco\": {\n    \"tipo\": \"Residencial\",\n    \"cep\": \"30110000\",\n    \"rua\": \"Rua Mato Grosso\",\n    \"numero\": \"142\",\n    \"bairro\": \"Belvedere\",\n    \"complemento\": \"Apto 201\",\n    \"cidade\": \"Belo Horizonte\",\n    \"uf\": \"MG\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Cadastra um novo usuário com perfil fixo 'Usuario' e endereço vinculado."
+          }
+        },
+        {
+          "name": "Login (Autenticação e Cookie HttpOnly)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identificador\": \"carlos.silva\",\n  \"senha\": \"SenhaForte123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Valida credenciais e emite o cookie de sessão HttpOnly 'access_token'."
+          }
+        },
+        {
+          "name": "Logout (Encerrar Sessão)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Remove o cookie de sessão do navegador ou cliente HTTP."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuário",
+      "item": [
+        {
+          "name": "Obter Dados do Usuário Logado (/me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "Retorna o cadastro e endereços do usuário autenticado via cookie HttpOnly."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}

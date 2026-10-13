@@ -22,8 +22,8 @@
 
 | ID | Requisito | Prioridade |
 |---|---|---|
-| RF01 | O sistema deve permitir cadastrar um usuário com: nome, e-mail, `user_login` (nome de usuário escolhido por ele), senha e dados pessoais opcionais (CPF, RG, nascimento, gênero, telefones). **O formulário não oferece escolha de perfil** | Alta |
-| RF02 | O sistema deve permitir cadastrar ao menos um endereço associado ao usuário | Média |
+| RF01 | O sistema deve permitir cadastrar um usuário com: nome, e-mail, `user_login` (nome de usuário escolhido por ele), senha, endereço obrigatório e dados pessoais opcionais (CPF, RG, nascimento, gênero, telefones). **O formulário não oferece escolha de perfil** | Alta |
+| RF02 | O sistema deve exigir obrigatoriamente o cadastro de ao menos um endereço residencial/comercial no momento do registro. Cadastros sem endereço ou com dados de logradouro incompletos são rejeitados com erro 422 | Alta |
 | RF03 | O sistema deve validar unicidade de `user_login`, `email`, `cpf` e `rg` e retornar erro claro em caso de duplicidade | Alta |
 | RF04 | O sistema deve validar formato de e-mail, CPF (dígitos verificadores), CEP, UF e telefone (exatamente 11 dígitos numéricos: DDD + celular; o front envia só dígitos, sem máscara) | Alta |
 | RF05 | O usuário deve poder fazer login com `user_login` **ou** `email` + senha | Alta |
@@ -61,6 +61,7 @@ O JWT fica em **cookie `HttpOnly; Secure; SameSite=Lax; Path=/`**, definido pelo
 | RNF09 | Dados pessoais (CPF, RG) tratados conforme **LGPD**: coletar só o necessário, nunca expor em respostas desnecessárias |
 | RNF10 | Mensagens de erro não vazam detalhes internos (stack trace, SQL) |
 | RNF18 | Proteção contra **CSRF** nas rotas que alteram estado: `SameSite=Lax`, somente `POST` com corpo JSON (`Content-Type: application/json`) e checagem do header `Origin` contra o host da aplicação. Nenhuma rota `GET` altera dados |
+| RNF19 | **Atomicidade e Integridade Transacional Usuário-Endereço:** O sistema garante que não existam endereços órfãos (assegurado por `usuario_id INT NOT NULL` e `FOREIGN KEY ... ON DELETE CASCADE`) nem usuários sem endereço (assegurado por validação obrigatória no schema de entrada e transação atômica no backend com `commit`/`rollback` conjunto) |
 
 ### Qualidade
 | ID | Requisito |
@@ -79,7 +80,7 @@ O JWT fica em **cookie `HttpOnly; Secure; SameSite=Lax; Path=/`**, definido pelo
 - RN02: Todo usuário tem exatamente 1 perfil. No cadastro, o perfil é sempre `Usuario`.
 - RN05: O perfil nunca é definido pelo próprio usuário nem pelo corpo da requisição de cadastro.
 - RN03: Exclusão de usuário é **lógica** (`ativo = false`), preservando histórico futuro (notas, presença).
-- RN04: Um usuário pode ter vários endereços; apenas um deve estar `ATIVO` por tipo.
+- RN04: Todo usuário tem obrigatoriamente ao menos 1 endereço cadastrado no momento do registro. Um usuário pode ter vários endereços, mas apenas um ativo por tipo. Endereços órfãos e usuários sem endereço são impossíveis no sistema.
 
 ## 6. Rotas da API (contrato inicial)
 

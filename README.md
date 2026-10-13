@@ -4,7 +4,90 @@ Repositório do MVP (Produto Mínimo Viável) do sistema de gestão escolar da *
 
 A visão do sistema é centralizar a autenticação dos usuários para que, nas próximas fases, alunos consultem notas e frequência, professores façam os lançamentos acadêmicos e as equipes administrativa e de suporte gerenciem a plataforma. **Esta primeira fase cobre apenas cadastro e login**, com foco em segurança.
 
-> **Status:** fase de documentação concluída; implementação ainda não iniciada. Veja a pasta [`docs/`](docs/).
+> **Status:** Backend implementado e testado com sucesso localmente. Próxima etapa: desenvolvimento da interface web. Veja a pasta [`docs/`](docs/).
+
+---
+
+## Como Executar Localmente
+
+### 1. Pré-requisitos
+* **Python 3.10+** instalado.
+* **MySQL** ativo (via **XAMPP**, Docker ou serviço local) com o script [`database/seed.sql`](database/seed.sql) executado no banco `ello_mineiro`.
+* Arquivo `.env` configurado na raiz com as credenciais do banco (use [`.env.example`](.env.example) como base).
+
+### 2. Preparação do Ambiente Virtual (venv)
+
+#### Criar o ambiente virtual (apenas na primeira vez):
+```bash
+python -m venv .venv
+```
+
+#### Ativar o ambiente virtual:
+* **No Windows (PowerShell):**
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  ```
+  *(Se o PowerShell bloquear a execução de scripts, execute uma vez como Administrador: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`)*
+
+* **No Windows (Prompt de Comando / CMD):**
+  ```cmd
+  .\.venv\Scripts\activate.bat
+  ```
+
+* **No Linux ou macOS (Bash / Zsh):**
+  ```bash
+  source .venv/bin/activate
+  ```
+
+> 💡 **Dica:** Quando a venv estiver ativa, o início da linha do terminal exibirá o prefixo `(.venv)`. A partir daí, você pode usar os comandos normais (`pip`, `python`, `uvicorn`) sem precisar referenciar o caminho completo da pasta!
+
+#### Instalar as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 3. Inicialização do Backend
+Com a venv ativa:
+```bash
+uvicorn app.main:app --reload
+```
+O servidor estará rodando em: **`http://localhost:8000`**
+
+---
+
+### 4. Documentação Interativa da API (Swagger & Postman)
+Com o servidor rodando, acesse no navegador:
+* **Swagger UI:** [`http://localhost:8000/docs`](http://localhost:8000/docs)
+* **ReDoc alternativo:** [`http://localhost:8000/redoc`](http://localhost:8000/redoc)
+* **Postman Collection pronta:** Você pode importar diretamente o arquivo oficial [`docs/ello_mineiro_postman_collection.json`](docs/ello_mineiro_postman_collection.json) no Postman para ter todas as rotas e payloads de exemplo pré-configurados!
+
+Permite testar visualmente todas as rotas de cadastro, login, logout e `/me` diretamente pela interface.
+
+---
+
+### 5. Teste de Integridade e Saúde da API
+Para verificar se a API está online e se a conexão com o banco MySQL está funcionando:
+* **Pelo navegador:** [`http://localhost:8000/health`](http://localhost:8000/health)
+* **Retorno esperado:**
+  ```json
+  {
+    "status": "online",
+    "banco": "conectado",
+    "db_check": true
+  }
+  ```
+
+---
+
+### 6. Execução da Bateria de Testes Automatizados
+Com a venv ativa, execute o script de validação de ponta a ponta que testa automaticamente o health check, cadastro com perfil fixo, detecção de duplicidade (409), login, cookie HttpOnly e `/me`:
+```bash
+python test_api.py
+```
+
+*(Para desativar o ambiente virtual quando terminar de trabalhar, basta digitar `deactivate` no terminal).*
 
 ---
 

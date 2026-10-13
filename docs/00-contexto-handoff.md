@@ -1,107 +1,84 @@
-# Contexto do Projeto e Ponto de Retomada
-
-> Documento de **passagem de contexto**. Serve para iniciar uma nova conversa (humana ou com assistente de IA) em outra máquina sem perder o histórico de decisões. Leia também [01-requisitos.md](01-requisitos.md), [02-decisoes-arquitetura.md](02-decisoes-arquitetura.md) e [03-regras-futuras.md](03-regras-futuras.md).
-
 ## 1. Projeto
 
 - **O quê:** MVP do sistema de gestão da escola particular **Ello Mineiro**, trabalho em grupo da disciplina de **Banco de Dados** (curso técnico). Projeto de aprendizagem.
-- **Escopo da Fase 1:** apenas **cadastro e login** de usuários, com senhas em hash e rotas de API para o front. Notas, presença, turmas e calendário são fases futuras.
-- **Estado atual:** **documentação fechada** (inclui `database/seed.sql` revisado) e esqueleto de pastas vazio. Nenhum código de aplicação foi escrito. Combinado com o usuário: **documentar tudo antes de implementar.**
+- **Escopo da Fase 1:** apenas **cadastro e login** de usuários, com senhas em hash (Argon2id), integridade atômica com endereço obrigatório e rotas de API servidas na mesma origem com cookie `HttpOnly`.
+- **Estado atual:** **Backend FastAPI 100% implementado e validado** localmente contra o MySQL no XAMPP. Bateria de testes automatizados (`test_api.py`) passando com 100% de sucesso. Documentação técnica e OpenAPI totalmente sincronizados.
 - **Idioma:** português (documentação, nomes de campos e commits).
 
-## 2. Decisões já tomadas
+## 2. Decisões já consolidadas
 
 | Tema | Decisão |
 |---|---|
-| Banco | **MySQL** (mantém a modelagem do `seed.sql`). Hospedagem gratuita: **TiDB Cloud Serverless** (alternativas: Aiven; plano B: Neon/PostgreSQL) |
-| Backend | **Python + FastAPI**, hospedado no **Render** (plano gratuito, com cold start) |
+| Banco | **MySQL** (esquema `database/seed.sql`). Desenvolvido e testado localmente no **XAMPP/DBeaver**; produção futura no **TiDB Cloud Serverless** |
+| Backend | **Python + FastAPI**, arquitetura desacoplada em repositórios SQL puros (`PyMySQL`), segurança com **Argon2id** e JWT (`HS256`) |
 | Front-end | HTML/CSS/JS estáticos **servidos pelo próprio backend** (`GET /` retorna `index.html`; API em `/api/*`). **Deploy único, mesma origem, sem CORS** |
-| Acesso ao banco | **SQL puro** (PyMySQL), **sem ORM**, para o grupo ver os `SELECT/INSERT/UPDATE`. Todo SQL em `app/repositories/`, sempre parametrizado (`%s`) |
-| Senhas | Hash **Argon2id** ou **bcrypt**, feito só no backend |
-| Token | **JWT** (PyJWT, HS256, expiração curta) |
-| Armazenamento do JWT | **Cookie `HttpOnly; Secure; SameSite=Lax; Path=/`** (nome `access_token`). Login responde com `Set-Cookie` (sem token no corpo); `POST /api/auth/logout` apaga o cookie. CSRF mitigado por `SameSite`, `POST` só com JSON e checagem de `Origin` |
-| Perfil no cadastro | O formulário **não pede perfil**. Todo usuário nasce com o perfil padrão **`Usuario`**. Perfis `Aluno/Professor/Suporte/Administrativo` existem no banco, mas só serão atribuídos no futuro pelo setor administrativo (ver doc 03) |
-| `user_login` | **Nome de usuário escolhido pelo usuário** (3–30 caracteres, `a-z 0-9 . _`, único, imutável). **Não** é a matrícula. Matrícula (padrão X) e registro funcional (padrão Y) serão identificadores separados, futuros |
-| Login | Aceita `user_login` **ou** e-mail + senha |
-
-Tabelas do banco atual (`database/seed.sql`): `Permissoes`, `Usuarios`, `Endereco`.
-
-## 3. Ponto resolvido: armazenamento do JWT
-
-**Decisão (2026-10-08): cookie `HttpOnly; Secure; SameSite=Lax; Path=/`.** A opção `sessionStorage` foi descartada.
-
-| Critério | Cookie HttpOnly (escolhido) | sessionStorage + header `Authorization: Bearer` |
-|---|---|---|
-| Roubo do token por XSS | **Resistente** (JS não lê o cookie) | Vulnerável |
-| CSRF | Exposto, mitigável (`SameSite=Lax`, apenas `POST` JSON, checar `Origin`) | Não afetado |
-| Simplicidade para o grupo entender | Média | **Alta** |
-| Código do front | **Mais simples** (navegador envia sozinho) | Precisa anexar header em todo `fetch` |
-| Encaixe com mesma origem | **Excelente** | Bom |
-| Mobile / outro domínio no futuro | Pior | **Melhor** |
-| Logout | Rota `POST /api/auth/logout` que apaga o cookie | `sessionStorage.clear()` (token segue válido até expirar) |
-
-**Onde foi aplicada:**
-- `01-requisitos.md`: RF06, RF09, RF12, RNF05, nova RNF18 (CSRF), rota `POST /api/auth/logout` e exemplos de login/logout com `Set-Cookie`.
-- `02-decisoes-arquitetura.md`: seção 5 (atributos do cookie, fluxo, CSRF, limitações) e item 3 das "Perguntas em aberto".
-- `03-regras-futuras.md`: seção 7 (revogação e token CSRF dedicado como evoluções).
-
-## 4. Pontos em aberto (retomar daqui)
-
-Antes de iniciar o código do backend, há dois pontos em aberto para avaliar ou confirmar:
-
-### 4.1. Colunas opcionais em `database/seed.sql`
-- **`atualizado_em`** e **`ultimo_login`** (opcionais, descritos abaixo): **decidido não inserir no MVP** (2026-10-12). A análise de complexidade está na conversa e pode ser retomada numa fase futura (ver doc 03, seção 7: auditoria).
-  - `atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`: rastreia quando o cadastro foi alterado.
-  - `ultimo_login DATETIME NULL`: atualizado no login com sucesso para auditoria/suporte.
-- **Padronização de telefone: decidido** (2026-10-12). `telefone` e `telefone_sec` passam a `VARCHAR(11)`, somente dígitos (`DDD + celular`, 11 dígitos). Aplicado em `database/seed.sql` e `01-requisitos.md` (RF04). O backend valida e o front envia sem máscara.
-
-### 4.2. Estratégia de hospedagem do Banco (MySQL vs PostgreSQL)
-- **Principal:** MySQL no **TiDB Cloud Serverless** (compatível com MySQL, mantém 100% da sintaxe do `seed.sql`).
-- **Plano B:** **Neon (PostgreSQL)** se houver indisponibilidade ou dificuldade no TiDB Cloud. *Impacto se mudar:* adaptar `AUTO_INCREMENT` para `GENERATED ALWAYS AS IDENTITY` e trocar driver `PyMySQL` por `psycopg` ou `asyncpg`.
+| Sessão | Cookie **`HttpOnly; Secure; SameSite=Lax; Path=/`** (nome `access_token`). O navegador gerencia de forma transparente sem manipulação direta pelo JS |
+| Integridade de Endereço | **Atomicidade total (RN04 / RNF19):** Todo cadastro exige obrigatoriamente um endereço completo. Não existem usuários sem endereço nem endereços órfãos |
+| Perfil no cadastro | Todo usuário nasce com o perfil padrão **`Usuario`**. Perfis avançados (`Aluno`, `Professor`, etc.) existem no banco para o futuro |
+| `user_login` | Nome de usuário escolhido pelo usuário (3–30 caracteres, `[a-zA-Z0-9._]`, case preservado no envio e exibição; busca e unicidade case-insensitive no MySQL `utf8mb4_unicode_ci`) |
 
 ---
 
-## 5. Próximo passo após fechar os pontos acima
+## 3. Ponto de Atenção Prioritário para a Próxima Sessão
 
-A Etapa 1 (Banco Local no XAMPP + DBeaver + `.env` + conta TiDB) foi concluída com sucesso (ver [docs/04-guia-execucao-e-ambiente.md](04-guia-execucao-e-ambiente.md)).
+### 📌 Revisão da Obrigatoriedade de CPF e RG (Avaliar no início da próxima sessão):
+* **Contexto atual:** Atualmente no `seed.sql` e no `schemas.py`, os campos `cpf` e `rg` estão como opcionais (`NULL`), seguindo uma premissa inicial de LGPD.
+* **Problema identificado pelo usuário:** Por ser um MVP de curso técnico de escopo fechado que provavelmente não terá uma fase posterior de secretaria escolar para preenchimento de documentos, manter CPF e RG opcionais fará com que eles fiquem permanentemente vazios/órfãos nos cadastros de teste.
+* **Proposta para a próxima sessão:** Avaliar a alteração para torná-los **obrigatórios (`NOT NULL`)** no banco de dados, no schema Pydantic e no formulário do front-end.
+* **Casos de exceção a definir:** Como tratar alunos estrangeiros ou imigrantes sem documentos nacionais (ex.: permitir validação de RNE/Passaporte no RG ou exigir apenas CPF com dígitos válidos).
 
-A implementação do backend em Python + FastAPI seguirá a ordem:
-1. Configuração de dependências (`requirements.txt`).
-2. Conexão com o banco (`app/db.py`) lendo o `.env` e rota `GET /health`.
-3. Camada de segurança e hashing (`app/security.py`).
-4. Repositórios SQL (`app/repositories/usuarios.py`, `enderecos.py`).
-5. Rotas de autenticação (`app/routers/auth.py`, `me.py`).
-6. Montagem dos arquivos estáticos e páginas em `app/main.py`.
-7. Testes de API isolados (Swagger em `/docs` e Postman).
-8. Integração das páginas HTML do front-end (`index.html`, `cadastro.html`, `home.html`).
-9. Deploy em produção (TiDB Cloud + Render).
+---
 
-## 6. Estrutura de pastas do projeto
+## 4. Próxima Etapa de Execução (Passo 4 — Interface Web)
+
+Com a API e o banco 100% validados, a próxima atuação será focada na construção do front-end estático, seguindo rigorosamente a especificação do documento [docs/05-modelagem-frontend.md](05-modelagem-frontend.md):
+
+1. **Estilos Globais (`frontend/static/css/style.css`):**
+   * Design moderno e institucional para a *Escola Ello Mineiro* (CSS puro, responsivo, tipografia Inter, cards e feedbacks).
+2. **Tela de Login (`frontend/index.html` — `GET /`):**
+   * Formulário de login com identificador (`user_login` ou e-mail), senha e consumo de `POST /api/auth/login`.
+3. **Tela de Cadastro (`frontend/cadastro.html` — `GET /cadastro`):**
+   * Formulário com dados pessoais e endereço, máscaras inteligentes (telefone fixo 10 dígitos / celular 11 dígitos, CPF, CEP com envio limpo `\D`), Title Case inteligente para nomes, comboboxes (`genero`, `uf`), omissão de campos de sistema (`ativo`, `situacao`, `tipo`), validações em tempo real e autopreenchimento via **ViaCEP**.
+4. **Tela Home / Dashboard (`frontend/home.html` — `GET /home`):**
+   * Guarda de rota (redireciona para `/` se receber 401 de `GET /api/me`), visualização do perfil institucional, endereço cadastrado e botão de Logout.
+
+---
+
+## 5. Estrutura do Repositório
 
 ```
 ello-mineiro-mvp/
-├── docs/                # 00-contexto-handoff, 01-requisitos, 02-decisoes, 03-regras
-├── database/            # seed.sql (esquema do MySQL)
-├── app/                 # Backend FastAPI
-│   ├── main.py          # App FastAPI, montagem de estáticos e roteadores
-│   ├── db.py            # Conexão SQL puro
-│   ├── repositories/    # Todo o SQL fica aqui (SQL parametrizado com %s)
-│   └── routers/         # Endpoints da API (/api/auth, /api/me)
-├── frontend/            # Servido pelo próprio FastAPI
-│   ├── index.html       # Login (rota "/")
-│   ├── cadastro.html    # Cadastro (rota "/cadastro")
-│   ├── home.html        # Home / Dashboard (rota "/home")
-│   └── static/          # CSS e JS
+├── docs/                                  # Documentação completa
+│   ├── 00-contexto-handoff.md             # Este arquivo (passagem de bastão)
+│   ├── 01-requisitos.md                   # Requisitos funcionais, não funcionais e regras
+│   ├── 02-decisoes-arquitetura.md         # Decisões de stack, deploy único e SQL puro
+│   ├── 03-regras-futuras.md               # Regras para fases pós-MVP
+│   ├── 04-guia-execucao-e-ambiente.md     # Guia do XAMPP, DBeaver, .env e pipeline
+│   ├── 05-modelagem-frontend.md           # Especificação completa do front-end
+│   └── ello_mineiro_postman_collection.json # Collection nativa pronta para o Postman
+├── database/
+│   └── seed.sql                           # Esquema MySQL com restrições e carga inicial
+├── app/                                   # Backend FastAPI
+│   ├── main.py                            # App, rotas estáticas e /health
+│   ├── db.py                              # Conexão PyMySQL pura parametrizada
+│   ├── security.py                        # Argon2id e PyJWT
+│   ├── schemas.py                         # Validações com Pydantic v2
+│   ├── dependencies.py                    # Leitura segura de cookie HttpOnly
+│   ├── repositories/                      # usuarios.py e enderecos.py (SQL puro)
+│   └── routers/                           # auth.py e me.py
+├── frontend/                              # Interface web estática
+│   ├── index.html, cadastro.html, home.html
+│   └── static/css, static/js
+├── test_api.py                            # Bateria automatizada de testes locais
 ├── requirements.txt
 ├── .env.example
 ├── .gitignore
 └── README.md
 ```
 
-## 7. Prompts sugeridos para iniciar o novo chat
+---
 
-### Opção A: Se quiser resolver os pontos pendentes antes de codificar
-> "Leia `docs/00-contexto-handoff.md`, `docs/01-requisitos.md`, `docs/02-decisoes-arquitetura.md`, `docs/03-regras-futuras.md`, `database/seed.sql` e `README.md`. Vamos repassar e decidir os pontos em aberto da seção 4 do arquivo de handoff (colunas opcionais do seed e confirmação do host de banco de dados) antes de iniciar a escrita de código."
+## 6. Prompt para Iniciar a Próxima Sessão no Chat
 
-### Opção B: Se quiser ir direto para a implementação do backend
-> "Leia `docs/00-contexto-handoff.md`, `docs/01-requisitos.md`, `docs/02-decisoes-arquitetura.md`, `docs/03-regras-futuras.md`, `database/seed.sql` e `README.md`. A documentação do MVP Ello Mineiro está fechada (JWT em cookie HttpOnly, SQL puro). Vamos iniciar o desenvolvimento do backend FastAPI seguindo a ordem da seção 5 do handoff."
+> "Leia `docs/00-contexto-handoff.md`, `docs/05-modelagem-frontend.md` e `docs/01-requisitos.md`. O backend FastAPI com SQL puro e o banco MySQL local estão 100% implementados e testados com sucesso. Vamos iniciar avaliando o ponto prioritário da seção 3 do handoff (revisão da obrigatoriedade dos campos CPF e RG) e, em seguida, construir a interface web do front-end seguindo as especificações do documento 05."
+

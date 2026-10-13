@@ -46,6 +46,24 @@ class EnderecoResponseSchema(BaseModel):
     situacao: str = "ATIVO"
 
 
+def formatar_nome_proprio(nome: str) -> str:
+    """
+    Capitaliza as palavras do nome próprio em Title Case,
+    preservando preposições e conjunções comuns em língua portuguesa em minúsculas
+    (ex: 'carlos da silva' -> 'Carlos da Silva').
+    """
+    preposicoes = {"de", "da", "do", "das", "dos", "e"}
+    palavras = nome.strip().split()
+    palavras_formatadas = []
+    for i, p in enumerate(palavras):
+        p_lower = p.lower()
+        if i > 0 and p_lower in preposicoes:
+            palavras_formatadas.append(p_lower)
+        else:
+            palavras_formatadas.append(p_lower.capitalize())
+    return " ".join(palavras_formatadas)
+
+
 class UsuarioRegisterSchema(BaseModel):
     user_login: str = Field(min_length=3, max_length=30)
     email: EmailStr
@@ -62,12 +80,21 @@ class UsuarioRegisterSchema(BaseModel):
     @field_validator("user_login")
     @classmethod
     def validar_user_login(cls, v: str) -> str:
-        login_limpo = v.strip().lower()
-        if not re.match(r"^[a-z0-9._]{3,30}$", login_limpo):
+        # Preserva exatamente as maiúsculas e minúsculas digitadas pelo usuário
+        login_limpo = v.strip()
+        if not re.match(r"^[a-zA-Z0-9._]{3,30}$", login_limpo):
             raise ValueError(
-                "O nome de usuário deve conter entre 3 e 30 caracteres e usar apenas letras minúsculas, números, ponto ou sublinhado."
+                "O nome de usuário deve conter entre 3 e 30 caracteres e usar apenas letras, números, ponto ou sublinhado."
             )
         return login_limpo
+
+    @field_validator("nome")
+    @classmethod
+    def validar_nome(cls, v: str) -> str:
+        nome_limpo = v.strip()
+        if len(nome_limpo) < 2:
+            raise ValueError("O nome deve conter pelo menos 2 caracteres.")
+        return formatar_nome_proprio(nome_limpo)
 
     @field_validator("cpf")
     @classmethod
@@ -84,8 +111,8 @@ class UsuarioRegisterSchema(BaseModel):
     def validar_telefone(cls, v: Optional[str]) -> Optional[str]:
         if v:
             limpo = re.sub(r"\D", "", v)
-            if len(limpo) != 11:
-                raise ValueError("O telefone deve conter exatamente 11 dígitos numéricos (DDD + número).")
+            if len(limpo) not in (10, 11):
+                raise ValueError("O telefone deve conter 10 dígitos (fixo) ou 11 dígitos (celular) com DDD.")
             return limpo
         return None
 

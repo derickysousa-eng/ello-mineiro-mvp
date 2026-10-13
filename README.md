@@ -164,3 +164,4 @@ docs/         requisitos, decisões de arquitetura e regras futuras
 3. [Decisões de arquitetura](docs/02-decisoes-arquitetura.md)
 4. [Regras de negócio futuras](docs/03-regras-futuras.md)
 5. [Guia de ambiente e execução](docs/04-guia-execucao-e-ambiente.md)
+6. [Modelagem e especificação do front-end](docs/05-modelagem-frontend.md)

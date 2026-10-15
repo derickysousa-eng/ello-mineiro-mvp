@@ -19,13 +19,23 @@
 
 ---
 
-## 3. Ponto de Atenção Prioritário para a Próxima Sessão
+## 3. Pontos de Atenção Prioritários para a Próxima Sessão
 
-### 📌 Revisão da Obrigatoriedade de CPF e RG (Avaliar no início da próxima sessão):
+### 📌 3.1. Revisão da Obrigatoriedade de CPF e RG:
 * **Contexto atual:** Atualmente no `seed.sql` e no `schemas.py`, os campos `cpf` e `rg` estão como opcionais (`NULL`), seguindo uma premissa inicial de LGPD.
 * **Problema identificado pelo usuário:** Por ser um MVP de curso técnico de escopo fechado que provavelmente não terá uma fase posterior de secretaria escolar para preenchimento de documentos, manter CPF e RG opcionais fará com que eles fiquem permanentemente vazios/órfãos nos cadastros de teste.
 * **Proposta para a próxima sessão:** Avaliar a alteração para torná-los **obrigatórios (`NOT NULL`)** no banco de dados, no schema Pydantic e no formulário do front-end.
 * **Casos de exceção a definir:** Como tratar alunos estrangeiros ou imigrantes sem documentos nacionais (ex.: permitir validação de RNE/Passaporte no RG ou exigir apenas CPF com dígitos válidos).
+
+### 📌 3.2. Estratégia de Segurança das Rotas de Mutabilidade via Chave Privada (`.env` / Render):
+* **Contexto e Objetivo:** Bloquear requisições disparadas por scripts externos fora do site oficial (via cURL, Python, Postman ou outros domínios maliciosos), garantindo que apenas requisições legítimas do site do Ello Mineiro consigam disparar mutações (`/api/auth/register`, `/api/auth/login`).
+* **Mecanismo com Chave Privada (`API_KEY` / `APP_SECRET`):**
+  1. **Armazenamento 100% Seguro e Privado:** A chave secreta é cadastrada **apenas no arquivo `.env` (local) e nas Variáveis de Ambiente do Render (produção)**. Ela nunca é commitada no Git e nunca é exposta no código JavaScript estático do navegador.
+  2. **Validação para Integrações e Scripts Externos:** Qualquer chamada externa de API precisa fornecer o cabeçalho `X-API-Key`. Se a chave não coincidir com a variável de ambiente do servidor, o backend recusa a requisição com `403 Forbidden`.
+  3. **Validação Transparente para o Front-end do Site (Zero Atrito para o Usuário):** Como o front-end é servido pelo próprio servidor FastAPI na mesma origem, o backend utiliza a chave mestra das variáveis de ambiente para gerar um handshake seguro (via token de sessão/CSRF ou assinatura de requisição) no momento da entrega do HTML. O usuário final não precisa saber a chave nem inseri-la manualmente.
+  4. **Proteções Complementares Integradas (A implementar — atualmente não vigentes no código):**
+     * **RNF18 (Validação de Origem):** Middleware que checa `Origin` e `Referer`, bloqueando disparos vindos de domínios externos não autorizados (*deve ser implementado*).
+     * **RNF07 (Rate Limiting):** Limitador de taxa de envio por IP nas rotas de mutabilidade para mitigar força bruta e spam (*deve ser implementado*).
 
 ---
 
@@ -82,5 +92,6 @@ ello-mineiro-mvp/
 
 ## 6. Prompt para Iniciar a Próxima Sessão no Chat
 
-> "Leia `docs/00-contexto-handoff.md`, `docs/05-modelagem-frontend.md` e `docs/01-requisitos.md`. O backend FastAPI com SQL puro e o banco MySQL local estão 100% implementados e testados com sucesso. Vamos iniciar avaliando o ponto prioritário da seção 3 do handoff (revisão da obrigatoriedade dos campos CPF e RG) e, em seguida, construir a interface web do front-end seguindo as especificações do documento 05."
+> "Leia `docs/00-contexto-handoff.md`, `docs/05-modelagem-frontend.md` e `docs/01-requisitos.md`. O backend FastAPI com SQL puro e o banco MySQL local estão 100% implementados e testados com sucesso. Vamos iniciar avaliando os pontos prioritários da seção 3 do handoff (obrigatoriedade de CPF/RG e estratégia de segurança das rotas com chave privada no .env/Render) e, em seguida, construir a interface web do front-end seguindo as especificações do documento 05."
+
 

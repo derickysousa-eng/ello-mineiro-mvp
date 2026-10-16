@@ -18,7 +18,9 @@
    * O próprio navegador anexa e envia o cookie automaticamente em todas as requisições para a mesma origem.
 4. **Resiliência e Feedback Visual:**
    * Estados de carregamento (*loading spinners* ou botões desabilitados) durante o envio.
-   * Mensagens de erro claras e amigáveis para códigos HTTP retornados pelo backend (`401`, `409`, `422`, `500`).
+   * Mensagens de erro claras e amigáveis para códigos HTTP retornados pelo backend (`401`, `409`, `422`, `429`, `500`).
+5. **Segurança de Mutabilidade Transparente (Sem Exposição de Chaves):**
+   * Como o front-end é servido pelo FastAPI na mesma origem, o navegador anexa automaticamente os cabeçalhos de contexto de origem (`Sec-Fetch-Site: same-origin`, `Origin`), permitindo mutações transparentes sem necessidade de expor chaves de API (`API_KEY`) no código JavaScript do cliente. Clientes externos (Postman/scripts) utilizam o cabeçalho `X-API-Key`.
 
 ---
 

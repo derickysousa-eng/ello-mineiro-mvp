@@ -13,6 +13,11 @@ from app.repositories import enderecos as repo_enderecos
 from app.repositories import usuarios as repo_usuarios
 from app.schemas import UsuarioLoginSchema, UsuarioRegisterSchema
 from app.security import criar_token_jwt, gerar_hash_senha, verificar_senha
+from app.security_guards import (
+    rate_limit_login,
+    rate_limit_register,
+    validar_mutabilidade_segura,
+)
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -52,7 +57,8 @@ EXEMPLO_LOGIN = {
 @router.post(
     "/register",
     status_code=status.HTTP_201_CREATED,
-    summary="Cadastro de novos usuários"
+    summary="Cadastro de novos usuários",
+    dependencies=[Depends(validar_mutabilidade_segura), Depends(rate_limit_register)]
 )
 def registrar_usuario(
     dados: UsuarioRegisterSchema = Body(
@@ -113,7 +119,8 @@ def registrar_usuario(
 
 @router.post(
     "/login",
-    summary="Autenticação de usuário e início de sessão"
+    summary="Autenticação de usuário e início de sessão",
+    dependencies=[Depends(validar_mutabilidade_segura), Depends(rate_limit_login)]
 )
 def login(
     dados: UsuarioLoginSchema = Body(
@@ -180,7 +187,8 @@ def login(
 
 @router.post(
     "/logout",
-    summary="Encerramento de sessão"
+    summary="Encerramento de sessão",
+    dependencies=[Depends(validar_mutabilidade_segura)]
 )
 def logout(response: Response):
     """

@@ -36,11 +36,11 @@ Para desacoplar as configurações sensíveis do código-fonte (em conformidade 
 ### 2.1. Estrutura das Variáveis
 ```env
 # Banco de Dados (Configuração do XAMPP local)
-DB_HOST=localhost
+DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
-DB_NAME=ello_mineiro
+DB_NAME=db_ellomineiro
 
 # Parâmetro de SSL (Local = false / TiDB Cloud = true)
 DB_SSL=false
@@ -49,14 +49,49 @@ DB_SSL=false
 JWT_SECRET=coloque_uma_chave_secreta_forte_e_aleatoria_aqui
 JWT_ALGORITHM=HS256
 JWT_EXPIRES_MINUTES=60
+
+# Chave Privada da Aplicação (Proteção de Mutabilidade via X-API-Key)
+API_KEY=sua_chave_privada_da_aplicacao_aqui
 ```
 
 ### 2.2. Como o Backend Consumirá Essas Informações
-* O arquivo `app/db.py` lerá essas variáveis usando a biblioteca `python-dotenv` ou o `pydantic-settings`.
-* A conexão será criada via **PyMySQL** utilizando pool ou conexões dedicadas parametrizadas.
+* O arquivo `app/db.py` lerá essas variáveis usando a biblioteca `python-dotenv`.
+* A conexão será criada via **PyMySQL** utilizando conexões dedicadas parametrizadas.
 * A flag `DB_SSL`:
   * Quando `false` (ambiente local): conecta direto sem exigir certificados TLS.
   * Quando `true` (ambiente de produção no TiDB): ativa a criptografia TLS obrigatória exigida por bancos de dados em nuvem.
+* A variável `API_KEY` é consumida pelo módulo `app/security_guards.py` para validar o cabeçalho `X-API-Key` em chamadas externas às rotas de mutabilidade (`/api/auth/register`, `/api/auth/login`, `/api/auth/logout`).
+
+### 2.3. Padrão Seguro da Indústria para Geração de Chaves de API (`API_KEY`) e Segredos (`JWT_SECRET`)
+
+> [!CAUTION]
+> **Nunca utilize geradores de senha online ou sites da web** para criar chaves de API (`API_KEY`) ou segredos criptográficos (`JWT_SECRET`). Sites de terceiros podem registrar logs das chaves geradas, sofrer interceptação ou utilizar algoritmos de baixa entropia no navegador (como `Math.random()`), comprometendo toda a segurança do sistema.
+
+O padrão seguro da indústria para geração de chaves criptográficas utiliza geradores de números pseudo-aleatórios criptograficamente seguros (**CSPRNG**) executados **localmente na sua própria máquina**:
+
+1. **Entropia Mínima de 256 bits (32 bytes):**
+   * Torna computacionalmente impossível adivinhar a chave via força bruta ($2^{256}$ combinações possíveis).
+2. **Prefixo Identificador Institucional (Boas Práticas de Mercado):**
+   * Semelhante ao padrão de APIs líderes (ex: Stripe `sk_live_...`, GitHub `ghp_...`), adota-se o prefixo `ello_live_` ou `ello_priv_`.
+   * Facilita a auditoria de código e ativa detecção preventiva por ferramentas de *Secret Scanning* (como GitGuardian e GitHub Secret Scanning).
+3. **Comandos Recomendados para Geração Local no Terminal:**
+   * **Via Python (CSPRNG Nativo — Módulo `secrets`):**
+     ```bash
+     python -c "import secrets; print('ello_live_' + secrets.token_urlsafe(32))"
+     ```
+     *Exemplo de saída:* `ello_live_mQ7kL9_zT1pXy8W4rE3vA6bC5dF8gH2jK1nO0sP9uI4`
+   * **Via Python em Hexadecimal:**
+     ```bash
+     python -c "import secrets; print('ello_live_' + secrets.token_hex(32))"
+     ```
+   * **Via OpenSSL (Linux / Mac / Git Bash no Windows):**
+     ```bash
+     openssl rand -hex 32
+     ```
+   * **Via PowerShell Nativo no Windows:**
+     ```powershell
+     powershell -Command "[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))"
+     ```
 
 ---
 

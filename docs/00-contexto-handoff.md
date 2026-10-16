@@ -16,10 +16,11 @@
 | Integridade de Endereço | **Atomicidade total (RN04 / RNF19):** Todo cadastro exige obrigatoriamente um endereço completo. Não existem usuários sem endereço nem endereços órfãos |
 | Perfil no cadastro | Todo usuário nasce com o perfil padrão **`Usuario`**. Perfis avançados (`Aluno`, `Professor`, etc.) existem no banco para o futuro |
 | `user_login` | Nome de usuário escolhido pelo usuário (3–30 caracteres, `[a-zA-Z0-9._]`, case preservado no envio e exibição; busca e unicidade case-insensitive no MySQL `utf8mb4_unicode_ci`) |
+| Segurança de Mutabilidade | **Chave Privada (`X-API-Key`) + Mesma Origem (RNF18) + Rate Limiting (RNF07):** Mutações externas exigem `X-API-Key` (403 se ausente/inválida); navegação no site oficial opera com zero atrito via mesma origem; Rate Limiter barra abusos com 429 Too Many Requests |
 
 ---
 
-## 3. Pontos de Atenção Prioritários para a Próxima Sessão
+## 3. Pontos de Atenção e Funcionalidades de Segurança
 
 ### 📌 3.1. Revisão da Obrigatoriedade de CPF e RG:
 * **Contexto atual:** Atualmente no `seed.sql` e no `schemas.py`, os campos `cpf` e `rg` estão como opcionais (`NULL`), seguindo uma premissa inicial de LGPD.
@@ -27,21 +28,24 @@
 * **Proposta para a próxima sessão:** Avaliar a alteração para torná-los **obrigatórios (`NOT NULL`)** no banco de dados, no schema Pydantic e no formulário do front-end.
 * **Casos de exceção a definir:** Como tratar alunos estrangeiros ou imigrantes sem documentos nacionais (ex.: permitir validação de RNE/Passaporte no RG ou exigir apenas CPF com dígitos válidos).
 
-### 📌 3.2. Estratégia de Segurança das Rotas de Mutabilidade via Chave Privada (`.env` / Render):
-* **Contexto e Objetivo:** Bloquear requisições disparadas por scripts externos fora do site oficial (via cURL, Python, Postman ou outros domínios maliciosos), garantindo que apenas requisições legítimas do site do Ello Mineiro consigam disparar mutações (`/api/auth/register`, `/api/auth/login`).
-* **Mecanismo com Chave Privada (`API_KEY` / `APP_SECRET`):**
-  1. **Armazenamento 100% Seguro e Privado:** A chave secreta é cadastrada **apenas no arquivo `.env` (local) e nas Variáveis de Ambiente do Render (produção)**. Ela nunca é commitada no Git e nunca é exposta no código JavaScript estático do navegador.
-  2. **Validação para Integrações e Scripts Externos:** Qualquer chamada externa de API precisa fornecer o cabeçalho `X-API-Key`. Se a chave não coincidir com a variável de ambiente do servidor, o backend recusa a requisição com `403 Forbidden`.
-  3. **Validação Transparente para o Front-end do Site (Zero Atrito para o Usuário):** Como o front-end é servido pelo próprio servidor FastAPI na mesma origem, o backend utiliza a chave mestra das variáveis de ambiente para gerar um handshake seguro (via token de sessão/CSRF ou assinatura de requisição) no momento da entrega do HTML. O usuário final não precisa saber a chave nem inseri-la manualmente.
-  4. **Proteções Complementares Integradas (A implementar — atualmente não vigentes no código):**
-     * **RNF18 (Validação de Origem):** Middleware que checa `Origin` e `Referer`, bloqueando disparos vindos de domínios externos não autorizados (*deve ser implementado*).
-     * **RNF07 (Rate Limiting):** Limitador de taxa de envio por IP nas rotas de mutabilidade para mitigar força bruta e spam (*deve ser implementado*).
+### ✅ 3.2. Estratégia de Segurança das Rotas de Mutabilidade via Chave Privada (`.env` / Render) — [IMPLEMENTADO E VALIDADO 100%]:
+* **Contexto e Objetivo:** Bloqueia requisições disparadas por scripts externos fora do site oficial (via cURL, Python, Postman ou outros domínios maliciosos que não possuam a chave de API), garantindo que apenas requisições legítimas do site do Ello Mineiro ou integrações autorizadas consigam disparar mutações (`/api/auth/register`, `/api/auth/login`, `/api/auth/logout`).
+* **Implementação Realizada no Módulo [`app/security_guards.py`](app/security_guards.py):**
+  1. **Armazenamento 100% Seguro e Privado:** Chave `API_KEY` cadastrada no arquivo `.env` (local) e prevista para variáveis de ambiente do Render (produção). Registrada como modelo em `.env.example`. Nunca exposta no JavaScript do cliente.
+  2. **Validação para Integrações e Scripts Externos:** Chamadas externas que não tenham origem comprovada do site oficial precisam fornecer o cabeçalho `X-API-Key`. Se a chave for ausente ou incorreta, o backend rejeita com **`403 Forbidden`**. A Postman Collection oficial foi atualizada com a variável `{{api_key}}`.
+  3. **Validação Transparente para o Front-end do Site (Zero Atrito para o Usuário):** Validação automática de mesma origem (RNF18) avaliando cabeçalhos nativos do navegador (`Sec-Fetch-Site: same-origin`, `Origin` e `Referer`). O usuário no navegador navega e preenche formulários sem precisar digitar nem conhecer a chave de API.
+  4. **Proteções Complementares Integradas:**
+     * **RNF18 (Validação de Origem):** Bloqueio estrito de disparos com `Origin` ou `Referer` externos ou de domínios cruzados não autorizados.
+     * **RNF07 (Rate Limiting por IP):** Implementado via `RateLimiter` em memória (janela deslizante) aplicando limite de 10 tentativas/minuto para login e 5 cadastros/minuto para registro, retornando **`429 Too Many Requests`** com header explicativo `Retry-After`.
+     * **Padrão de Geração CSPRNG:** Registrado em [docs/04-guia-execucao-e-ambiente.md](04-guia-execucao-e-ambiente.md) o padrão criptográfico seguro da indústria para geração da chave via terminal (`python -c "import secrets; print('ello_live_' + secrets.token_urlsafe(32))"`), desaconselhando terminantemente o uso de sites online.
+     * **Matriz de Rotas:** Mapeamento explícito de quais rotas exigem `X-API-Key` documentado na seção 6.1 de [docs/01-requisitos.md](01-requisitos.md).
+  5. **Bateria de Testes (`test_api.py`):** Expandida para **11 cenários automatizados** cobrindo bloqueio externo sem chave (403), chave errada (403), autorização com chave correta (201), cadastro com todos os opcionais preenchidos, cadastro com todos os campos opcionais nulos (`genero`, `cpf`, `rg`, `data_nasc`, `telefone`, `telefone_sec`), autorização transparente por mesma origem (201), integridade atômica com endereço (422), duplicidade (409), emissão de cookie HttpOnly e checagem de nulos no `/api/me`, logout e Rate Limiting (429). 100% aprovada.
 
 ---
 
 ## 4. Próxima Etapa de Execução (Passo 4 — Interface Web)
 
-Com a API e o banco 100% validados, a próxima atuação será focada na construção do front-end estático, seguindo rigorosamente a especificação do documento [docs/05-modelagem-frontend.md](05-modelagem-frontend.md):
+Com a API, o banco e a segurança de rotas 100% validados, a próxima atuação será focada na construção do front-end estático, seguindo rigorosamente a especificação do documento [docs/05-modelagem-frontend.md](05-modelagem-frontend.md):
 
 1. **Estilos Globais (`frontend/static/css/style.css`):**
    * Design moderno e institucional para a *Escola Ello Mineiro* (CSS puro, responsivo, tipografia Inter, cards e feedbacks).
@@ -73,6 +77,7 @@ ello-mineiro-mvp/
 │   ├── main.py                            # App, rotas estáticas e /health
 │   ├── db.py                              # Conexão PyMySQL pura parametrizada
 │   ├── security.py                        # Argon2id e PyJWT
+│   ├── security_guards.py                 # Validação de X-API-Key, mesma origem e Rate Limiting
 │   ├── schemas.py                         # Validações com Pydantic v2
 │   ├── dependencies.py                    # Leitura segura de cookie HttpOnly
 │   ├── repositories/                      # usuarios.py e enderecos.py (SQL puro)
@@ -81,7 +86,7 @@ ello-mineiro-mvp/
 │   ├── index.html, cadastro.html, home.html # Telas finais de produção
 │   ├── static/css, static/js              # Estilos e scripts oficiais
 │   └── test/                              # Protótipos e referências visuais da equipe
-├── test_api.py                            # Bateria automatizada de testes locais
+├── test_api.py                            # Bateria automatizada de testes locais (11 cenários)
 ├── requirements.txt
 ├── .env.example
 ├── .gitignore
@@ -92,6 +97,6 @@ ello-mineiro-mvp/
 
 ## 6. Prompt para Iniciar a Próxima Sessão no Chat
 
-> "Leia `docs/00-contexto-handoff.md`, `docs/05-modelagem-frontend.md` e `docs/01-requisitos.md`. O backend FastAPI com SQL puro e o banco MySQL local estão 100% implementados e testados com sucesso. Vamos iniciar avaliando os pontos prioritários da seção 3 do handoff (obrigatoriedade de CPF/RG e estratégia de segurança das rotas com chave privada no .env/Render) e, em seguida, construir a interface web do front-end seguindo as especificações do documento 05."
+> "Leia `docs/00-contexto-handoff.md`, `docs/05-modelagem-frontend.md` e `docs/01-requisitos.md`. O backend FastAPI com SQL puro, o banco MySQL local e a segurança de rotas (X-API-Key, mesma origem e Rate Limiting) estão 100% implementados e validados por 11 testes automatizados. Vamos iniciar decidindo o ponto 3.1 do handoff (obrigatoriedade de CPF e RG) e, em seguida, construir a interface web do front-end adaptando os protótipos de `frontend/test/` conforme as especificações do documento 05."
 
 

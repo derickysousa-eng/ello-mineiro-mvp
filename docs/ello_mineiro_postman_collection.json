@@ -34,6 +34,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autorização de mutabilidade para clientes externos (Subtópico 3.2)"
               }
             ],
             "body": {
@@ -56,6 +61,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autorização de mutabilidade para clientes externos (Subtópico 3.2)"
               }
             ],
             "body": {
@@ -74,7 +84,13 @@
           "name": "Logout (Encerrar Sessão)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autorização de mutabilidade para clientes externos (Subtópico 3.2)"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/auth/logout",
               "host": ["{{base_url}}"],
@@ -108,6 +124,11 @@
     {
       "key": "base_url",
       "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "ello_priv_key_local_dev_2026",
       "type": "string"
     }
   ]

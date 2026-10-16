@@ -201,18 +201,43 @@ def buscar_por_identificador(conn, identificador):
 
 Sugestão: revisar em *code review* que nenhum PR contenha SQL fora de `repositories/` ou concatenação de strings em queries.
 
-## 8. Perguntas em aberto
+## 8. Segurança de Mutabilidade, Chave Privada e Rate Limiting
+
+### Contexto e Motivação
+Rotas de mutabilidade que alteram estado ou criam credenciais (`/api/auth/register`, `/api/auth/login`, `/api/auth/logout`) são alvos frequentes de scripts externos não autorizados, ataques de força bruta, spam de contas e requisições maliciosas de domínios cruzados.
+
+### Estratégia de Defesa em Camadas (Módulo `app/security_guards.py`)
+1. **Chave Privada (`API_KEY`) para Integrações Externas:**
+   * A chave mestra é cadastrada exclusivamente nas variáveis de ambiente (`.env` local e Render em produção), nunca versionada no Git.
+   * Clientes externos (Postman, scripts cURL/Python, microsserviços) devem fornecer o cabeçalho `X-API-Key`. A ausência ou divergência da chave resulta em **`403 Forbidden`**.
+2. **Handshake Transparente de Mesma Origem (Zero Atrito para o Usuário):**
+   * Como o front-end é servido pelo próprio FastAPI na mesma origem, o backend valida automaticamente os cabeçalhos de contexto do navegador (`Sec-Fetch-Site: same-origin`, `Origin` e `Referer`).
+   * O usuário final no navegador tem experiência fluida sem precisar interagir com chaves técnicas.
+3. **Proteção Contra Requisições de Origem Cruzada (RNF18):**
+   * Qualquer chamada que apresente `Origin` ou `Referer` de um domínio externo sem a chave de API autorizada é bloqueada imediatamente.
+4. **Rate Limiting em Memória (RNF07):**
+   * Controlador em janela deslizante (*Sliding Window*) por IP do cliente.
+   * Limites definidos: 10 requisições/minuto no `/api/auth/login` e 5 cadastros/minuto no `/api/auth/register`.
+   * Retorno padronizado **`429 Too Many Requests`** acompanhado do cabeçalho HTTP `Retry-After`.
+
+---
+
+## 9. Perguntas em aberto
 
 1. ~~Perfil no cadastro~~ → **decidido:** o cadastro não pede perfil; todo usuário nasce com o perfil padrão `Usuario`. Demais perfis serão liberados no futuro pelo setor administrativo — ver [01-requisitos.md](01-requisitos.md) e [03-regras-futuras.md](03-regras-futuras.md).
 1a. ~~Padrão do `user_login`~~ → **decidido:** nome de usuário escolhido pelo próprio usuário (3–30 caracteres, `a-z 0-9 . _`, único). A matrícula e o registro funcional são identificadores separados, previstos para fases futuras.
 2. ~~ORM ou SQL puro~~ → **decidido: SQL puro** (seção 7).
 3. ~~JWT em cookie HttpOnly ou `sessionStorage`~~ → **decidido: cookie `HttpOnly; Secure; SameSite=Lax`** (seção 5). Login responde com `Set-Cookie` (sem token no corpo) e existe `POST /api/auth/logout`.
-4. Manter MySQL ou migrar para PostgreSQL caso o host gratuito falhe?
+4. ~~Segurança de rotas de mutabilidade~~ → **decidido:** proteção com chave privada `API_KEY` para clientes externos + mesma origem transparente para o front-end + Rate Limiting por IP (seção 8).
+5. Manter MySQL ou migrar para PostgreSQL caso o host gratuito falhe?
 
-## 9. Roteiro sugerido
+---
+
+## 10. Roteiro sugerido
 
 1. Fechar as decisões acima.
 2. ~~Ajustar `seed.sql`~~ (feito, agora em `database/seed.sql`) e criar o banco no TiDB Cloud.
-3. Backend: `/health` → servir `index.html` em `/` → `register` → `login` → `me` → `logout`.
-4. Front: login, cadastro, home (chamando `/api/...` com URLs relativas).
+3. ~~Backend: `/health` → servir `index.html` em `/` → `register` → `login` → `me` → `logout` + Segurança de Mutabilidade~~ (100% implementado e testado).
+4. Front: login, cadastro, home (chamando `/api/...` com URLs relativas) adaptando os protótipos de `frontend/test/`.
 5. Deploy único no Render e testes de ponta a ponta.
+

@@ -55,18 +55,18 @@ O JWT fica em **cookie `HttpOnly; Secure; SameSite=Lax; Path=/`**, definido pelo
 | RNF03 | Toda comunicação via **HTTPS** |
 | RNF04 | SQL puro com queries **sempre parametrizadas** (`%s`), concentrado em `app/repositories/` (prevenção de SQL Injection). Ver [02-decisoes-arquitetura.md](02-decisoes-arquitetura.md) |
 | RNF05 | Front e API na mesma origem (sem CORS habilitado). Cookie do token com `HttpOnly; Secure; SameSite=Lax; Path=/` e `Max-Age` igual à expiração do JWT |
-| RNF06 | Segredos (chave JWT, string de conexão) em variáveis de ambiente, nunca no Git |
-| RNF07 | Limitação de tentativas de login (rate limiting) contra força bruta |
+| RNF06 | Segredos (chave JWT, string de conexão, API_KEY) em variáveis de ambiente (.env / Render), nunca no Git |
+| RNF07 | **Rate Limiting por IP (Sliding Window em memória):** Máx 10 tentativas/min no login e 5 cadastros/min no registro, mitigando força bruta e spam (retorna HTTP 429 Too Many Requests com header `Retry-After`) |
 | RNF08 | JWT com expiração curta (ex.: 30–60 min) e algoritmo fixo (HS256) |
 | RNF09 | Dados pessoais (CPF, RG) tratados conforme **LGPD**: coletar só o necessário, nunca expor em respostas desnecessárias |
 | RNF10 | Mensagens de erro não vazam detalhes internos (stack trace, SQL) |
-| RNF18 | Proteção contra **CSRF** nas rotas que alteram estado: `SameSite=Lax`, somente `POST` com corpo JSON (`Content-Type: application/json`) e checagem do header `Origin` contra o host da aplicação. Nenhuma rota `GET` altera dados |
+| RNF18 | **Proteção de Rotas de Mutabilidade e CSRF:** Chamadas externas exigem `X-API-Key` (rejeição 403 Forbidden se ausente/inválida); chamadas do site oficial operam com zero atrito via validação de mesma origem (`Sec-Fetch-Site: same-origin`, `Origin` e `Referer`). Bloqueio estrito de origens cruzadas |
 | RNF19 | **Atomicidade e Integridade Transacional Usuário-Endereço:** O sistema garante que não existam endereços órfãos (assegurado por `usuario_id INT NOT NULL` e `FOREIGN KEY ... ON DELETE CASCADE`) nem usuários sem endereço (assegurado por validação obrigatória no schema de entrada e transação atômica no backend com `commit`/`rollback` conjunto) |
 
 ### Qualidade
 | ID | Requisito |
 |---|---|
-| RNF11 | API REST em JSON, com códigos HTTP corretos (201, 400, 401, 403, 409, 422) |
+| RNF11 | API REST em JSON, com códigos HTTP corretos (201, 400, 401, 403, 409, 422, 429) |
 | RNF12 | Documentação automática da API (OpenAPI/Swagger — nativa do FastAPI) |
 | RNF13 | Custo de hospedagem **zero** |
 | RNF14 | Banco normalizado (mínimo 3FN) com scripts versionados no repositório |
@@ -82,17 +82,26 @@ O JWT fica em **cookie `HttpOnly; Secure; SameSite=Lax; Path=/`**, definido pelo
 - RN03: Exclusão de usuário é **lógica** (`ativo = false`), preservando histórico futuro (notas, presença).
 - RN04: Todo usuário tem obrigatoriamente ao menos 1 endereço cadastrado no momento do registro. Um usuário pode ter vários endereços, mas apenas um ativo por tipo. Endereços órfãos e usuários sem endereço são impossíveis no sistema.
 
-## 6. Rotas da API (contrato inicial)
+## 6. Rotas da API e Matriz de Segurança
 
-| Método | Rota | Auth | Descrição |
-|---|---|---|---|
-| POST | `/api/auth/register` | Pública | Cria usuário com o perfil padrão `Usuario` (sem campo de perfil) |
-| POST | `/api/auth/login` | Pública | Valida credenciais e grava o JWT em cookie `HttpOnly` (`Set-Cookie`) |
-| POST | `/api/auth/logout` | Cookie | Apaga o cookie do token (`Max-Age=0`) e responde `204` |
-| GET | `/api/me` | Cookie | Dados do usuário logado (inclui o perfil) |
-| GET | `/health` | Pública | Verifica se a API está no ar |
-| GET | `/` | Pública | Retorna `index.html` (login), servido pelo próprio backend |
-| GET | `/cadastro`, `/home` | Pública (página) | Páginas estáticas; os dados só vêm da API autenticada |
+### 6.1. Matriz Completa de Proteção das Rotas (X-API-Key vs Mesma Origem vs Cookie)
+
+Abaixo está o mapeamento explícito de todas as rotas da aplicação, detalhando quais exigem o cabeçalho `X-API-Key`, quais aceitam navegação transparente do front-end oficial, quais exigem cookie de sessão e quais possuem rate limiting:
+
+| Rota | Método | Exige `X-API-Key`? | Front-end Oficial (Mesma Origem)? | Exige Cookie `access_token`? | Rate Limit por IP (RNF07)? | Tipo / Justificativa de Segurança |
+|---|---|:---:|:---:|:---:|:---:|---|
+| `/api/auth/register` | `POST` | **SIM** (para scripts externos) | **SIM** (zero atrito, via `Sec-Fetch-Site` / `Origin`) | NÃO | **SIM** (máx 5 req/min) | **Mutabilidade pública.** Bloqueia scripts/bots externos e criação massiva de contas. |
+| `/api/auth/login` | `POST` | **SIM** (para scripts externos) | **SIM** (zero atrito, via `Sec-Fetch-Site` / `Origin`) | NÃO | **SIM** (máx 10 req/min) | **Mutabilidade pública.** Bloqueia scanners, força bruta e ataques de dicionário. |
+| `/api/auth/logout` | `POST` | **SIM** (para scripts externos) | **SIM** (zero atrito, via `Sec-Fetch-Site` / `Origin`) | **SIM** (revoga cookie) | NÃO | **Mutabilidade de sessão.** Proteção contra CSRF e revogação arbitrária de sessões. |
+| `/api/me` | `GET` | **NÃO** | **SIM** | **SIM** (`HttpOnly; Secure`) | NÃO | **Leitura autenticada.** A segurança é assegurada exclusivamente pelo JWT no cookie. |
+| `/health` | `GET` | **NÃO** | **SIM** | NÃO | NÃO | **Monitoramento público.** Endpoint leve para health check do Render, uptime e ping. |
+| `/` | `GET` | **NÃO** | **SIM** | NÃO | NÃO | **Página pública.** Entrega do HTML da tela de Login (`index.html`). |
+| `/cadastro` | `GET` | **NÃO** | **SIM** | NÃO | NÃO | **Página pública.** Entrega do HTML do formulário de Cadastro (`cadastro.html`). |
+| `/home` | `GET` | **NÃO** | **SIM** | NÃO (dados protegidos via `/api/me`) | NÃO | **Página de dashboard.** Entrega do HTML (`home.html`); o JS redireciona se `/api/me` for 401. |
+| `/static/*` | `GET` | **NÃO** | **SIM** | NÃO | NÃO | **Arquivos estáticos públicos.** Servimento de CSS, JS e imagens institucionais. |
+
+> **Regra Fundamental de `X-API-Key`:** O cabeçalho `X-API-Key` é obrigatório **apenas para rotas de mutabilidade (`POST`) quando disparadas por clientes externos (Postman, scripts Python/cURL, integrações externas)**. O front-end oficial servido na mesma origem opera com **zero atrito**, sendo autorizado automaticamente pelo backend através da validação dos cabeçalhos legítimos de navegador (`Sec-Fetch-Site: same-origin`, `Origin` e `Referer`). Rotas de leitura (`GET /api/me`, `GET /health` e páginas estáticas) **nunca** exigem `X-API-Key`.
+
 
 Exemplo de login:
 ```http

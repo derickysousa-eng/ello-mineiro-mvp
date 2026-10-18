@@ -70,6 +70,7 @@ ello-mineiro-mvp/
 │   ├── 03-regras-futuras.md               # Regras para fases pós-MVP
 │   ├── 04-guia-execucao-e-ambiente.md     # Guia do XAMPP, DBeaver, .env e pipeline
 │   ├── 05-modelagem-frontend.md           # Especificação completa do front-end
+│   ├── kanban.md                          # Quadro Kanban oficial integrado ao Obsidian
 │   └── ello_mineiro_postman_collection.json # Collection nativa pronta para o Postman
 ├── database/
 │   └── seed.sql                           # Esquema MySQL com restrições e carga inicial

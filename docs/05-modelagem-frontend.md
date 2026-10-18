@@ -30,10 +30,11 @@
 * **Objetivo:** Ponto de entrada do sistema para autenticação de usuários cadastrados.
 * **Componentes da Interface:**
   * Card centralizado com identidade visual da *Escola Particular Ello Mineiro*.
-  * Campo **Identificador** (`user_login` ou e-mail): `input type="text"`, com suporte a preenchimento de nome de usuário ou e-mail.
+  * Campo **Identificador**: `input type="text"`, com suporte a preenchimento tanto do nome de usuário (`user_login`) quanto do e-mail cadastrado (conforme requisito **RF05**).
   * Campo **Senha**: `input type="password"`, com botão de alternar visualização (olho ocultar/mostrar senha).
-  * Botão de submissão **"Entrar no Sistema"**.
-  * Link para novo cadastro: *"Ainda não tem conta? Cadastre-se aqui"*.
+  * Botão de submissão **"Entrar"**.
+  * Link para recuperação de senha: *"Esqueci minha senha"* (no MVP exibe aviso informativo, ver seção 4).
+  * Botão/Link para novo cadastro: *"Ainda não tem conta? Cadastre-se aqui"*.
 * **Comportamento e Integração:**
   * Dispara `POST /api/auth/login` com payload:
     ```json
@@ -54,19 +55,19 @@
      * `Senha` (`senha`): campo de senha com indicador visual de requisitos (mínimo 8 caracteres) e barra de força.
   2. **Dados Pessoais:**
      * `Nome Completo` (`nome`): campo de texto obrigatório, formatado e enviado em **Title Case** inteligente (ver seção 3.2).
-     * `Gênero` (`genero`): **Combobox (`<select>`)** padronizado (ver seção 3.4).
+     * `Gênero` (`genero`): **Combobox (`<select>`)** padronizado com diretrizes do IBGE (ver seção 3.4).
      * `Data de Nascimento` (`data_nasc`): seletor de data (`type="date"`).
-     * `CPF` (`cpf`): campo com máscara dinâmica `000.000.000-00` e validação matemática de dígitos verificadores em tempo real.
-     * `RG` (`rg`): campo alfanumérico com validação em tempo real.
+     * `CPF` (`cpf`): campo com máscara dinâmica `000.000.000-00`, validação de 11 dígitos e cálculo matemático dos dígitos verificadores (módulo 11) em tempo real.
+     * `RG` (`rg`): campo alfanumérico flexível (de 7 a 14 caracteres alfanuméricos e pontuação), compatível com os diferentes formatos de RG estaduais (ex.: MG, SP) e com a coluna `VARCHAR(30)` do banco.
      * `Telefone Principal` (`telefone`): campo com máscara inteligente adaptativa para **fixo (10 dígitos)** ou **celular (11 dígitos)**.
      * `Telefone Secundário` (`telefone_sec`): opcional com a mesma máscara inteligente.
   3. **Endereço Residencial (Obrigatório — RN04 / RNF19):**
      * `CEP` (`cep`): campo com máscara `00000-000`. Ao completar 8 dígitos, consulta a API **ViaCEP** e autopreencha logradouro, bairro, cidade e UF.
-     * `Logradouro / Rua` (`rua`): preenchido via CEP ou ajustável manualmente.
+     * `Logradouro / Rua` (`rua`): preenchido via CEP e ajustável manualmente caso necessário.
      * `Número` (`numero`): obrigatório.
      * `Complemento` (`complemento`): opcional (ex: Apto 201, Bloco B).
-     * `Bairro` (`bairro`): autopreenchido via CEP ou ajustável.
-     * `Cidade` (`cidade`): campo de texto preenchido automaticamente via CEP (ver seção 3.4).
+     * `Bairro` (`bairro`): autopreenchido via CEP e ajustável manualmente.
+     * `Cidade` (`cidade`): preenchido automaticamente via CEP, liberando edição manual caso o serviço externo esteja indisponível (ver seção 3.4).
      * `UF` (`uf`): **Combobox (`<select>`)** com as 27 Unidades Federativas do Brasil (ver seção 3.4).
 
 ---
@@ -105,12 +106,12 @@
 
 ### 3.4. Componentes Combobox (`<select>`) vs Inputs de Texto
 * **Gênero (`genero`):**
-  * Implementado como `<select>` com opções fechadas: `Feminino`, `Masculino`, `Outro`, `Prefiro não informar`.
+  * Implementado como `<select>` com opções inclusivas alinhadas às diretrizes do IBGE: `Feminino`, `Masculino`, `Outro`, `Prefiro não informar`. No HTML, a opção *"Prefiro não informar"* envia valor compatível com a coluna `genero VARCHAR(20)` do banco de dados (ex: `value="Não informado"`).
 * **Unidade Federativa (`uf`):**
   * Implementado como `<select>` com as 27 siglas de estados brasileiros (AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO). Isso elimina erros de digitação e siglas inválidas.
-* **Cidade (`cidade`) — Análise de Viabilidade:**
+* **Cidade (`cidade`) — Autopreenchimento e Contingência:**
   * O Brasil possui mais de 5.570 municípios. Carregar um combobox estático com todos os municípios deixaria a página com mais de 500 KB desnecessários de HTML.
-  * **Solução:** O campo `cidade` é autopreenchido com base na consulta à API dos Correios (**ViaCEP**) disparada pelo CEP digitado. Permanece bloqueado/verificado por padrão, com opção de liberação para edição manual apenas caso o CEP seja genérico ou ocorra indisponibilidade no serviço externo.
+  * **Solução:** O campo `cidade` é autopreenchido via **ViaCEP** a partir do CEP digitado. Permanece bloqueado por padrão para precisão, mas é liberado automaticamente para edição manual caso o serviço externo falhe (offline/timeout) ou retorne CEP genérico/rural.
 
 ### 3.5. Campos Omitidos da Interface (Regras de Negócio e Valores Default)
 Os seguintes campos **não possuem e não devem possuir campos de preenchimento no front-end**, sendo determinados estritamente pelo backend e regras de banco de dados:
@@ -121,43 +122,52 @@ Os seguintes campos **não possuem e não devem possuir campos de preenchimento 
 ### 3.6. Validação Interativa em Tempo Real
 O formulário de cadastro fornece feedback imediato ao usuário nos eventos `input` e `blur`, antes do envio:
 * **E-mail:** Validação estrutural de formato (`usuario@dominio.com`) com mensagem de erro visual se o formato for inválido.
-* **CPF:** Além da máscara visual, executa em tempo real o algoritmo oficial dos dígitos verificadores (módulo 11) e rejeita sequências repetidas (`111.111.111-11`), exibindo alerta instantâneo: *"CPF inválido"*.
-* **RG:** Validação de tamanho mínimo e caracteres alfanuméricos válidos.
+* **CPF:** Além da máscara visual de 11 dígitos, executa em tempo real o algoritmo oficial dos dígitos verificadores (módulo 11) e rejeita sequências repetidas (`111.111.111-11`), alertando instantaneamente se o número for inválido.
+* **RG:** Validação de formato alfanumérico e comprimento válido (7 a 14 caracteres).
 * **Senha:** Indicador visual de complexidade (mínimo 8 caracteres, barra de progresso verde/vermelha).
 * **Bloqueio de Submissão:** O botão de cadastro permanece desabilitado ou impede o envio com destaque visual em vermelho caso algum campo obrigatório possua erro ativo.
 
 ---
 
-## 4. Estrutura de Arquivos Estáticos
+## 4. Estrutura de Arquivos Estáticos e Mapeamento de Protótipos
+
+A estrutura de arquivos do front-end divide-se entre as **páginas oficiais de produção** (servidas pelo FastAPI) e os **protótipos de referência** da equipe:
 
 ```
 frontend/
-├── index.html               # Tela de Login final (rota "/")
-├── cadastro.html            # Tela de Cadastro final (rota "/cadastro")
-├── home.html                # Dashboard autenticado final (rota "/home")
+├── index.html               # Tela de Login final de produção (servida em "GET /")
+├── cadastro.html            # Tela de Cadastro final de produção (servida em "GET /cadastro")
+├── home.html                # Dashboard autenticado final (servido em "GET /home")
 ├── static/
 │   ├── css/
-│   │   └── style.css        # Folha de estilos unificada e responsiva
+│   │   └── style.css        # Folha de estilos institucional unificada e responsiva
 │   ├── js/
-│   │   ├── auth.js          # Lógica de login, cadastro, máscaras e ViaCEP
+│   │   ├── auth.js          # Lógica de login, cadastro, máscaras, validações e ViaCEP
 │   │   └── home.js          # Guarda de rota do dashboard e logout
-│   └── img/                 # Imagens e logotipos institucionais oficiais
-└── test/                    # Protótipos e referências visuais da equipe (base para adaptação)
-    ├── login.html           # Rascunho inicial da tela de login
-    ├── cadastro.html        # Rascunho inicial do formulário de cadastro
-    ├── index.html           # Rascunho inicial da tela principal / menu
+│   └── img/                 # Logotipos e imagens institucionais otimizadas
+└── test/                    # Protótipos e referências visuais da equipe
+    ├── login.html           # Protótipo da tela de login -> base para frontend/index.html
+    ├── cadastro.html        # Protótipo do cadastro -> base para frontend/cadastro.html
+    ├── index.html           # Protótipo do painel acadêmico -> base para frontend/home.html
+    ├── recuperacao.html     # Protótipo da recuperação de senha (demonstrativo pós-MVP)
     ├── logo.png             # Logo preliminar da Escola Ello Mineiro
     └── escola.png           # Imagem ilustrativa de fachada/escola
 ```
 
-> **Nota sobre o diretório `frontend/test/`:** Contém os rascunhos de layout e imagens criados pela equipe. Durante o desenvolvimento das páginas finais de produção (`index.html`, `cadastro.html`, `home.html`), esses arquivos servirão de base conceitual e visual, sendo adaptados aos padrões de semântica, responsividade e integração com os contratos da API FastAPI.
+### Mapeamento dos Protótipos para as Telas Finais de Produção:
+| Arquivo de Protótipo (`frontend/test/`) | Página Final de Produção (`frontend/`) | Rota FastAPI | Papel no MVP |
+|---|---|---|---|
+| `test/login.html` | `frontend/index.html` | `GET /` | Tela pública de Login com identificador e senha |
+| `test/cadastro.html` | `frontend/cadastro.html` | `GET /cadastro` | Tela de cadastro com dados pessoais, endereço e ViaCEP |
+| `test/index.html` *(Painel Acadêmico)* | `frontend/home.html` | `GET /home` | Dashboard restrito exibindo dados do usuário e endereço |
+| `test/recuperacao.html` | Mantido em `test/` | — | Rascunho demonstrativo; recuperação por e-mail é recurso pós-MVP |
 
 ---
 
 ## 5. Próxima Etapa de Execução
 
-1. Criar o arquivo `frontend/static/css/style.css` com a identidade visual e componentes responsivos.
-2. Implementar `frontend/index.html` e `frontend/cadastro.html` com os formulários semânticos e validações em tempo real.
-3. Implementar `frontend/home.html` com o dashboard e guarda de sessão.
+1. Criar o arquivo `frontend/static/css/style.css` com a identidade visual institucional e componentes responsivos (baseados na paleta azul/dourada dos protótipos).
+2. Implementar `frontend/index.html` (Login) e `frontend/cadastro.html` (Cadastro) com formulários semânticos e validações.
+3. Implementar `frontend/home.html` com o painel acadêmico e guarda de rota de sessão.
 4. Implementar os scripts JavaScript em `frontend/static/js/`.
 5. Testar o fluxo completo de ponta a ponta no navegador em `http://localhost:8000`.

@@ -3,97 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>app</title>
+    <title>App - Painel Acadêmico</title>
     <style>
-    *{
-           box-sizing: border-box;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-body {
-    padding: 0;
-    margin: 0;
+        body {
+            padding: 0;
+            margin-top: 0;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            background-color: #1A365D;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
 
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+        .pagina {
+            width: 1000px;
+            margin-top: 0px;
+            margin-bottom: 20px;
+        }
 
-    background-color: #1A365D;
+        #cor {
+            width: 1000px;
+            min-height: 700px;
+            position: relative;
+            background-color: #F8F9FA;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+        }
 
-    min-height: 100vh;
+        /* Menu lateral (Header) padronizado */
+        header {
+            width: 280px;
+            min-height: 100%;
+            background-color: #CFAD6D;
+            position: relative;
+            padding: 20px 10px;
+            border-radius: 10px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-    display: flex;
-    justify-content: center;
-}
-header{
-    width: 250px;
-    background-color: #CFAD6D;
-    position: relative;
-    overflow: hidden;
-    border-radius: 10px;
+        #menu_titulo {
+            font-size: 45px;
+            text-align: left;
+            margin: 0 0 5px 0;
+            color: #1A365D;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
 
-}
-#menu_titulo{
-    font-size: 35px;
-    text-align: left;
-    margin-left: 10px;
-    margin-top: 10px;
-    text-shadow: 1px 1px 2px #1A365D;
+        #logo {
+            height: 80px;
+            width: 120px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
 
-}
-#logo{height: 200px;
-    width: 250px;
-    margin-left: auto;
-    margin-bottom: 100px;
+        .opcoes {
+            margin: 0;
+            background-color: transparent;
+            border-radius: 10px;
+            list-style: none;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #1A365D;
+            transition: background 0.2s;
+        }
 
-}
-.opcoes{
-    margin-right: 10px;
-    margin-left: 10px;
-    background-color: transparent;
-    border-radius: 10px;
-}
+        .opcoes:hover {
+            background-color: rgba(26, 54, 93, 0.1);
+        }
 
+        /* Campo de busca e botão dentro do menu lateral */
+        #busca {
+            margin-top: 10px;
+            border-radius: 10px;
+            border: 1px solid #1A365D;
+            height: 35px;
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        #pesquisar {
+            height: 35px;
+            width: 100%;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            background-color: #1A365D;
+        }
+
+        /* Área de conteúdo principal à direita */
+        main {
+            flex: 1;
+            padding: 40px;
+        }
+
+        main h1 {
+            font-weight: bold;
+            font-size: 32px;
+            text-align: left;
+            margin: 0 0 20px 0;
+            color: #1A365D;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Rodapé separado e alinhado embaixo */
+        footer {
+            width: 1000px;
+            font-size: 20px;
+            background-color: #F8F9FA;
+            color: #1A365D;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 10px;
+            border-radius: 0 0 10px 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        footer h3 {
+            margin: 0 0 10px 0;
+        }
+
+        footer p {
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
-   <header>
+    <div class="pagina">
+        <div id="cor">
+            <header>
+                <h1 id="menu_titulo">Escola Elo Mineiro</h1>
+                <img src="logo.png" alt="logo.png" id="logo">
 
-    <h1 id="menu_titulo">Escola Elo Mineiro </h1>
-    <img src="logo.png" alt="logo.png" id="logo">
+                <ul>
+                    <li class="opcoes"><p style="margin:0;">Inicio</p></li>
+                    <li class="opcoes"><p style="margin:0;">Calendario</p></li>
+                    <li class="opcoes"><p style="margin:0;">Notas</p></li>
+                    <li class="opcoes"><p style="margin:0;">Financeiro</p></li>
+                    <li class="opcoes"><p style="margin:0;">Suporte</p></li>
+                    <li class="opcoes"><p style="margin:0;">Sair</p></li>
+                </ul>
 
+                <div>
+                    <input type="text" id="busca" placeholder="Pesquisar...">
+                    <button id="pesquisar">Buscar</button>
+                </div>
+            </header>
 
-        <li class="opcoes">
-            <p>Inicio</p>
-        </li>
-        <li class="opcoes">
-            <p>Calendario</p>
-        </li>
-        <li class="opcoes">
-            <p>Notas</p>
-        </li>
-        <li class="opcoes">
-            <p>Financeiro</p>
-        </li>
-        <li class="opcoes">
-            <p>Suporte</p>
-        </li>
-        <li class = 'opcoes'>
-            <p>Sair</p>
+            <main>
+                <h1>Bem vindo Acadêmico</h1>
+            </main>
+        </div>
 
-        </li>
-        <input type="text" id="busca">
-        <button id="pesquisar"> </button>
         <footer>
             <h3>Contatos</h3>
-
             <p>E-mail: elomineiro@com</p>
-
             <p>Telefone: (31) 99999-9999</p>
             <p>Instagram: https://www.instagram.com/elomineiro/</p>
         </footer>
-
-</header>
-    <main>
-        <h1>Bem vindo Academico</h1>
-    </main>
-
+    </div>
 </body>
 </html>

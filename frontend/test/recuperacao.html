@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar senha</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            background-color: #1A365D;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagina {
+            width: 1000px;
+            margin-top: 0px;
+            margin-bottom: 20px;
+        }
+
+        #cor {
+            width: 1000px;
+            min-height: 700px;
+            position: relative;
+            overflow: hidden;
+            background-color: #F8F9FA;
+            border-radius: 10px 10px 0 0;
+            padding: 20px;
+        }
+
+        #logo {
+            height: 60px;
+            width: 100px;
+            vertical-align: middle;
+            margin-left: 15px;
+        }
+
+        header {
+            font-weight: bold;
+            font-size: 40px;
+            color: #1A365D;
+            margin: 0 0 20px 0;
+            text-shadow: 1px 1px 2px #1A365D;
+        }
+
+        #i_dados h1 {
+            font-weight: bold;
+            font-size: 25px;
+            text-align: left;
+            margin: 0 0 40px 0;
+            color: #1A365D;
+            text-shadow: 1px 1px 2px #1A365D;
+        }
+
+        main {
+            margin-left: 10px;
+        }
+
+        main label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1A365D;
+        }
+
+        input {
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            height: 35px;
+            width: 60%;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        /* Ajuste para inputs do tipo rádio não ficarem esticados */
+        input[type="radio"] {
+            width: auto;
+            height: auto;
+            display: inline;
+        }
+
+        select {
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1A365D;
+        }
+
+        option {
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        button {
+            height: 50px;
+            width: 300px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: white;
+            background-color: #1A365D;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            width: 100%;
+            font-size: 20px;
+            background-color: #F8F9FA;
+            color: #1A365D;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 10px;
+            border-radius: 0 0 10px 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        footer h3 {
+            margin: 0 0 10px 0;
+        }
+
+        footer p {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pagina">
+        <div id="cor">
+            <main>
+                <header>
+                    <h1>Recuperaçao de senha <img src="logo.png" alt="logo" id="logo"></h1>
+                </header>
+                <div id="irecuperar">
+                    <label for="recuperar">Digite seu email cadastrado:</label>
+                    <input type="text" id="recuperar">
+                </div>
+                <div id="token">
+                    <label for="token">insira o token abaixo: </label>
+                    <input type="text" id="token">
+                </div>
+
+
+            </main>
+        </div>
+
+        <footer>
+            <h3>Contatos</h3>
+            <p>E-mail: elomineiro@com</p>
+            <p>Telefone: (31) 99999-9999</p>
+            <p>Instagram: https://www.instagram.com/elomineiro/</p>
+        </footer>
+    </div>
+
+</body>
+</html>

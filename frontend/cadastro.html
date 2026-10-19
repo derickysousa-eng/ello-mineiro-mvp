@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Usuário — Escola Particular Ello Mineiro</title>
+  <meta name="description" content="Formulário de cadastro para novos alunos e responsáveis na Escola Particular Ello Mineiro.">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="icon" type="image/png" href="/static/img/logo.png">
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="register-container">
+      
+      <!-- Cabeçalho do Cadastro -->
+      <header class="auth-header">
+        <div class="brand-row">
+          <img src="/static/img/logo.png" alt="Logotipo Escola Ello Mineiro" class="brand-logo">
+          <div>
+            <h1 class="brand-title">Escola Particular Ello Mineiro</h1>
+            <p class="brand-subtitle">Registro de Novo Usuário Acadêmico</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Alertas Gerais de Cadastro -->
+      <div id="cadastro-alert" class="alert" role="alert" aria-live="polite"></div>
+
+      <form id="cadastro-form" novalidate>
+        
+        <!-- SEÇÃO 1: Credenciais de Acesso -->
+        <h2 class="form-section-title">
+          <span class="step-number">1</span> Credenciais de Acesso
+        </h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="user_login" class="form-label">
+              <i class="bi bi-at"></i> Nome de Usuário (@login) <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="user_login" 
+                name="user_login" 
+                class="form-input" 
+                placeholder="Ex: carlos.silva" 
+                minlength="3" 
+                maxlength="30"
+                required
+              >
+            </div>
+            <div id="user_login-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <i class="bi bi-envelope"></i> E-mail Institucional ou Pessoal <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                class="form-input" 
+                placeholder="carlos.silva@exemplo.com" 
+                required
+              >
+            </div>
+            <div id="email-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="senha" class="form-label">
+              <i class="bi bi-lock"></i> Senha de Acesso (Mín. 8 caracteres) <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="password" 
+                id="senha" 
+                name="senha" 
+                class="form-input" 
+                placeholder="Digite uma senha forte" 
+                minlength="8"
+                required
+              >
+              <button 
+                type="button" 
+                id="btn-toggle-senha-cad" 
+                class="btn-toggle-password" 
+                aria-label="Alternar visibilidade da senha"
+                title="Mostrar/Ocultar senha"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="password-meter" id="password-meter">
+              <div class="password-meter-bar" id="password-meter-bar"></div>
+            </div>
+            <div id="senha-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirma_senha" class="form-label">
+              <i class="bi bi-shield-lock"></i> Confirmar Senha <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="password" 
+                id="confirma_senha" 
+                name="confirma_senha" 
+                class="form-input" 
+                placeholder="Repita sua senha" 
+                minlength="8"
+                required
+              >
+            </div>
+            <div id="confirma_senha-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <!-- SEÇÃO 2: Dados Pessoais -->
+        <h2 class="form-section-title">
+          <span class="step-number">2</span> Dados Pessoais
+        </h2>
+
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label for="nome" class="form-label">
+              <i class="bi bi-person"></i> Nome Completo <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="nome" 
+                name="nome" 
+                class="form-input" 
+                placeholder="Ex: Carlos da Silva Sauro" 
+                minlength="2"
+                maxlength="100"
+                required
+              >
+            </div>
+            <div id="nome-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label for="genero" class="form-label">
+              <i class="bi bi-gender-ambiguous"></i> Gênero <span class="required">*</span>
+            </label>
+            <select id="genero" name="genero" class="form-select" required>
+              <option value="">Selecione...</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Outro">Outro</option>
+              <option value="Não informado">Prefiro não informar</option>
+            </select>
+            <div id="genero-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="data_nasc" class="form-label">
+              <i class="bi bi-calendar-event"></i> Data de Nascimento <span class="required">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="data_nasc" 
+              name="data_nasc" 
+              class="form-input" 
+              required
+            >
+            <div id="data_nasc-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="cpf" class="form-label">
+              <i class="bi bi-card-text"></i> CPF <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="cpf" 
+                name="cpf" 
+                class="form-input" 
+                placeholder="000.000.000-00" 
+                maxlength="14"
+                required
+              >
+            </div>
+            <div id="cpf-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="rg" class="form-label">
+              <i class="bi bi-file-earmark-person"></i> RG / Documento de Identidade <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="rg" 
+                name="rg" 
+                class="form-input" 
+                placeholder="Ex: MG-12.345.678" 
+                maxlength="30"
+                required
+              >
+            </div>
+            <div id="rg-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="telefone" class="form-label">
+              <i class="bi bi-telephone"></i> Telefone Principal (com DDD) <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="tel" 
+                id="telefone" 
+                name="telefone" 
+                class="form-input" 
+                placeholder="(31) 99999-9999" 
+                maxlength="15"
+                required
+              >
+            </div>
+            <div id="telefone-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="telefone_sec" class="form-label">
+              <i class="bi bi-telephone-plus"></i> Telefone Secundário / Recados (Opcional)
+            </label>
+            <div class="input-container">
+              <input 
+                type="tel" 
+                id="telefone_sec" 
+                name="telefone_sec" 
+                class="form-input" 
+                placeholder="(31) 3333-3333" 
+                maxlength="15"
+              >
+            </div>
+            <div id="telefone_sec-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <!-- SEÇÃO 3: Endereço Residencial (Obrigatório — RN04) -->
+        <h2 class="form-section-title">
+          <span class="step-number">3</span> Endereço Residencial Obrigatório
+        </h2>
+
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label for="cep" class="form-label">
+              <i class="bi bi-geo-alt"></i> CEP (ViaCEP) <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="cep" 
+                name="cep" 
+                class="form-input" 
+                placeholder="00000-000" 
+                maxlength="9"
+                required
+              >
+            </div>
+            <div id="cep-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group" style="flex: 2;">
+            <label for="rua" class="form-label">
+              <i class="bi bi-signpost-2"></i> Logradouro / Rua <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="rua" 
+              name="rua" 
+              class="form-input" 
+              placeholder="Ex: Rua Mato Grosso" 
+              maxlength="100"
+              required
+            >
+            <div id="rua-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label for="numero" class="form-label">
+              <i class="bi bi-123"></i> Número <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="numero" 
+              name="numero" 
+              class="form-input" 
+              placeholder="Ex: 142" 
+              maxlength="20"
+              required
+            >
+            <div id="numero-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex: 1.5;">
+            <label for="complemento" class="form-label">
+              <i class="bi bi-door-open"></i> Complemento (Opcional)
+            </label>
+            <input 
+              type="text" 
+              id="complemento" 
+              name="complemento" 
+              class="form-input" 
+              placeholder="Ex: Apto 201, Bloco B" 
+              maxlength="50"
+            >
+          </div>
+
+          <div class="form-group" style="flex: 1.5;">
+            <label for="bairro" class="form-label">
+              <i class="bi bi-buildings"></i> Bairro <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="bairro" 
+              name="bairro" 
+              class="form-input" 
+              placeholder="Ex: Centro" 
+              maxlength="50"
+              required
+            >
+            <div id="bairro-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group" style="flex: 1.5;">
+            <label for="cidade" class="form-label">
+              <i class="bi bi-geo"></i> Cidade <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="cidade" 
+              name="cidade" 
+              class="form-input" 
+              placeholder="Ex: Belo Horizonte" 
+              maxlength="50"
+              required
+            >
+            <div id="cidade-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label for="uf" class="form-label">
+              <i class="bi bi-map"></i> UF <span class="required">*</span>
+            </label>
+            <select id="uf" name="uf" class="form-select" required>
+              <option value="">UF</option>
+              <option value="AC">AC</option>
+              <option value="AL">AL</option>
+              <option value="AP">AP</option>
+              <option value="AM">AM</option>
+              <option value="BA">BA</option>
+              <option value="CE">CE</option>
+              <option value="DF">DF</option>
+              <option value="ES">ES</option>
+              <option value="GO">GO</option>
+              <option value="MA">MA</option>
+              <option value="MT">MT</option>
+              <option value="MS">MS</option>
+              <option value="MG">MG</option>
+              <option value="PA">PA</option>
+              <option value="PB">PB</option>
+              <option value="PR">PR</option>
+              <option value="PE">PE</option>
+              <option value="PI">PI</option>
+              <option value="RJ">RJ</option>
+              <option value="RN">RN</option>
+              <option value="RS">RS</option>
+              <option value="RO">RO</option>
+              <option value="RR">RR</option>
+              <option value="SC">SC</option>
+              <option value="SP">SP</option>
+              <option value="SE">SE</option>
+              <option value="TO">TO</option>
+            </select>
+            <div id="uf-feedback" class="input-feedback"></div>
+          </div>
+        </div>
+
+        <!-- SEÇÃO 4: Termos de Uso e Aceite -->
+        <h2 class="form-section-title">
+          <span class="step-number">4</span> Termos e Condições Institucionais
+        </h2>
+
+        <div class="terms-box" tabindex="0" aria-label="Termos de uso da instituição">
+          <h4>1. Aceitação e Objeto</h4>
+          <p>Ao acessar e cadastrar-se na plataforma, o usuário aceita plenamente estes Termos. O serviço destina-se exclusivamente ao provimento de atividades acadêmicas, materiais didáticos e comunicação escolar da Escola Particular Ello Mineiro.</p>
+
+          <h4>2. Cadastro e Responsabilidade</h4>
+          <p>O usuário é responsável pela veracidade e integridade de todos os dados cadastrados, bem como pelo sigilo intransferível de suas credenciais de acesso.</p>
+
+          <h4>3. Privacidade e Proteção de Dados (LGPD)</h4>
+          <p>Os dados pessoais coletados serão utilizados unicamente para fins de gestão acadêmica, registros pedagógicos e obrigações educacionais em conformidade com as normas vigentes de proteção de dados.</p>
+
+          <h4>4. Uso Aceitável</h4>
+          <p>É expressamente proibido tentar violar os sistemas de segurança, introduzir códigos maliciosos ou utilizar a plataforma para fins alheios ao ambiente educacional institucional.</p>
+        </div>
+
+        <div class="terms-acceptance">
+          <input type="checkbox" id="aceite_termos" name="aceite_termos" required>
+          <label for="aceite_termos">
+            Declaro que li e concordo integralmente com os Termos e Condições da Escola Particular Ello Mineiro. <span class="required">*</span>
+          </label>
+        </div>
+
+        <!-- Botão de Submissão -->
+        <button type="submit" id="btn-cadastrar" class="btn-primary">
+          <span class="spinner" id="cadastro-spinner"></span>
+          <i class="bi bi-check-circle-fill" id="btn-cadastrar-icon"></i>
+          <span id="btn-cadastrar-text">Concluir Cadastro</span>
+        </button>
+
+        <div class="auth-links" style="text-align: center; margin-top: 20px;">
+          <a href="/" class="auth-link" style="justify-content: center;">
+            <i class="bi bi-arrow-left"></i> Já possui uma conta? Voltar para o Login
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Rodapé Unificado com Ícones Profissionais -->
+    <footer class="app-footer">
+      <p><strong>Escola Particular Ello Mineiro</strong> — Unindo Família, Tradição e o Futuro da Educação.</p>
+      <div class="footer-contacts">
+        <span><i class="bi bi-envelope-fill"></i> contato@ellomineiro.com.br</span>
+        <span><i class="bi bi-telephone-fill"></i> (31) 99999-9999</span>
+        <span><i class="bi bi-instagram"></i> @ellomineiro</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>

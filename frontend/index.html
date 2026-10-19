@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Escola Particular Ello Mineiro</title>
+  <meta name="description" content="Acesse o portal da Escola Particular Ello Mineiro para consultar dados acadêmicos, boletins e comunicados.">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="icon" type="image/png" href="/static/img/logo.png">
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="auth-wrapper">
+      
+      <!-- Lado do Formulário de Acesso -->
+      <section class="auth-form-side">
+        <header class="auth-header">
+          <div class="brand-row">
+            <img src="/static/img/logo.png" alt="Logotipo Escola Ello Mineiro" class="brand-logo">
+            <h1 class="brand-title">Ello Mineiro</h1>
+          </div>
+          <p class="brand-subtitle">Portal Acadêmico — Autenticação de Acesso</p>
+        </header>
+
+        <!-- Mensagens de Feedback e Alertas -->
+        <div id="login-alert" class="alert" role="alert" aria-live="polite"></div>
+
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label for="identificador" class="form-label">
+              <i class="bi bi-person-badge"></i> Identificador de Acesso <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="identificador" 
+                name="identificador" 
+                class="form-input" 
+                placeholder="Nome de usuário (@login) ou e-mail" 
+                autocomplete="username"
+                required
+                autofocus
+              >
+            </div>
+            <div id="identificador-feedback" class="input-feedback"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="senha" class="form-label">
+              <i class="bi bi-lock"></i> Senha Institucional <span class="required">*</span>
+            </label>
+            <div class="input-container">
+              <input 
+                type="password" 
+                id="senha" 
+                name="senha" 
+                class="form-input" 
+                placeholder="Digite sua senha de acesso" 
+                autocomplete="current-password"
+                required
+              >
+              <button 
+                type="button" 
+                id="btn-toggle-senha" 
+                class="btn-toggle-password" 
+                aria-label="Alternar visibilidade da senha"
+                title="Mostrar/Ocultar senha"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div id="senha-feedback" class="input-feedback"></div>
+          </div>
+
+          <button type="submit" id="btn-login" class="btn-primary">
+            <span class="spinner" id="login-spinner"></span>
+            <i class="bi bi-box-arrow-in-right" id="btn-login-icon"></i>
+            <span id="btn-login-text">Entrar no Portal</span>
+          </button>
+        </form>
+
+        <nav class="auth-links" aria-label="Links auxiliares de autenticação">
+          <a href="/recuperacao" id="link-esqueci-senha" class="auth-link">
+            <i class="bi bi-key-fill"></i> Esqueci minha senha
+          </a>
+          <a href="/cadastro" class="auth-link">
+            <i class="bi bi-person-plus-fill"></i> Não possui cadastro? Registre-se aqui
+          </a>
+        </nav>
+      </section>
+
+      <!-- Lado Ilustrativo Institucional -->
+      <aside class="auth-banner-side" aria-hidden="true">
+        <img src="/static/img/escola.png" alt="Fachada da Escola Particular Ello Mineiro">
+        <div class="banner-overlay">
+          <h2>Tradição e Excelência</h2>
+          <p>Unindo Família, Tradição e o Futuro da Educação com tecnologia de ponta e acolhimento humano.</p>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Rodapé Unificado com Ícones Profissionais -->
+    <footer class="app-footer">
+      <p><strong>Escola Particular Ello Mineiro</strong> — Formando líderes para o amanhã.</p>
+      <div class="footer-contacts">
+        <span><i class="bi bi-envelope-fill"></i> contato@ellomineiro.com.br</span>
+        <span><i class="bi bi-telephone-fill"></i> (31) 99999-9999</span>
+        <span><i class="bi bi-instagram"></i> @ellomineiro</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>

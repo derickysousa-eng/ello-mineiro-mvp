@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Acadêmico — Escola Particular Ello Mineiro</title>
+  <meta name="description" content="Painel de controle acadêmico do aluno e responsável na Escola Particular Ello Mineiro.">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="icon" type="image/png" href="/static/img/logo.png">
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="dashboard-layout">
+      
+      <!-- Menu Lateral Dourado Institucional -->
+      <aside class="dashboard-sidebar">
+        <div>
+          <div class="sidebar-brand">
+            <h1>Ello Mineiro</h1>
+            <img src="/static/img/logo.png" alt="Logotipo Escola Ello Mineiro">
+          </div>
+
+          <nav aria-label="Navegação acadêmica">
+            <ul class="sidebar-nav">
+              <li>
+                <a href="/home" class="sidebar-nav-item active">
+                  <span><i class="bi bi-house-door-fill"></i> Início</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="sidebar-nav-item" onclick="alert('Módulo de Calendário Escolar estará disponível na próxima etapa pedagógica.'); return false;">
+                  <span><i class="bi bi-calendar3"></i> Calendário</span>
+                  <span class="badge-soon">Em breve</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="sidebar-nav-item" onclick="alert('Consulta de Notas e Frequências estará disponível após o lançamento do primeiro bimestre.'); return false;">
+                  <span><i class="bi bi-bar-chart-fill"></i> Notas</span>
+                  <span class="badge-soon">Em breve</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="sidebar-nav-item" onclick="alert('Módulo Financeiro e 2ª via de boletos em fase de integração bancária.'); return false;">
+                  <span><i class="bi bi-credit-card-fill"></i> Financeiro</span>
+                  <span class="badge-soon">Em breve</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="sidebar-nav-item" onclick="alert('Central de Suporte: suporte@ellomineiro.com.br ou (31) 99999-9999'); return false;">
+                  <span><i class="bi bi-headset"></i> Suporte</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        <div>
+          <button type="button" id="btn-logout" class="btn-logout">
+            <i class="bi bi-box-arrow-left"></i> Encerrar Sessão
+          </button>
+        </div>
+      </aside>
+
+      <!-- Conteúdo Principal do Painel -->
+      <main class="dashboard-content">
+        <header class="dashboard-header">
+          <div>
+            <h1 class="welcome-title" id="usuario-saudacao">Bem-vindo(a)!</h1>
+            <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+              Portal do Aluno — Ano Letivo 2026
+            </p>
+          </div>
+          <div class="user-badge" id="usuario-perfil-badge">
+            Aluno
+          </div>
+        </header>
+
+        <!-- Grade de Cards de Informação -->
+        <div class="cards-grid">
+          
+          <!-- Card 1: Dados Cadastrais Pessoais -->
+          <div class="info-card">
+            <div class="info-card-header">
+              <i class="bi bi-person-circle" style="font-size:22px; color:var(--color-primary);"></i>
+              <h3>Perfil do Usuário</h3>
+            </div>
+            
+            <div class="info-row">
+              <span class="info-label">Nome Completo:</span>
+              <span class="info-value" id="perfil-nome">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Nome de Usuário:</span>
+              <span class="info-value" id="perfil-login" style="color:var(--color-primary); font-weight:700;">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">E-mail:</span>
+              <span class="info-value" id="perfil-email">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Gênero:</span>
+              <span class="info-value" id="perfil-genero">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Data de Nascimento:</span>
+              <span class="info-value" id="perfil-nasc">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">CPF:</span>
+              <span class="info-value" id="perfil-cpf">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">RG:</span>
+              <span class="info-value" id="perfil-rg">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Telefone Principal:</span>
+              <span class="info-value" id="perfil-telefone">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Telefone Secundário:</span>
+              <span class="info-value" id="perfil-telefone-sec">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Status da Conta:</span>
+              <span class="info-value" id="perfil-status" style="color:var(--color-success); font-weight:700;">Ativo</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Endereço Residencial Ativo -->
+          <div class="info-card">
+            <div class="info-card-header">
+              <i class="bi bi-geo-alt-fill" style="font-size:22px; color:var(--color-primary);"></i>
+              <h3>Endereço Residencial</h3>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">Tipo de Logradouro:</span>
+              <span class="info-value" id="endereco-tipo">Residencial</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Logradouro / Rua:</span>
+              <span class="info-value" id="endereco-rua">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Número:</span>
+              <span class="info-value" id="endereco-numero">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Complemento:</span>
+              <span class="info-value" id="endereco-complemento">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Bairro:</span>
+              <span class="info-value" id="endereco-bairro">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Município / UF:</span>
+              <span class="info-value" id="endereco-cidade-uf">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">CEP:</span>
+              <span class="info-value" id="endereco-cep">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Situação Cadastral:</span>
+              <span class="info-value" id="endereco-situacao" style="color:var(--color-success); font-weight:700;">ATIVO</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Card 3: Avisos e Situação Pedagógica Institucional -->
+        <div class="info-card" style="margin-top:20px;">
+          <div class="info-card-header">
+            <i class="bi bi-megaphone-fill" style="font-size:22px; color:var(--color-primary);"></i>
+            <h3>Comunicados da Secretaria Pedagógica</h3>
+          </div>
+          <p style="font-size:14px; color:var(--text-muted); line-height:1.7;">
+            Seja muito bem-vindo(a) ao ambiente digital da <strong>Escola Particular Ello Mineiro</strong>. Seu cadastro institucional foi homologado com sucesso junto ao nosso sistema de gestão acadêmica. Em breve, as turmas ativas e os planos de estudos do curso estarão disponíveis para acompanhamento direto nesta central.
+          </p>
+        </div>
+      </main>
+
+    </div>
+
+    <!-- Rodapé Unificado com Ícones Profissionais -->
+    <footer class="app-footer">
+      <p><strong>Escola Particular Ello Mineiro</strong> — Unindo Família, Tradição e o Futuro da Educação.</p>
+      <div class="footer-contacts">
+        <span><i class="bi bi-envelope-fill"></i> contato@ellomineiro.com.br</span>
+        <span><i class="bi bi-telephone-fill"></i> (31) 99999-9999</span>
+        <span><i class="bi bi-instagram"></i> @ellomineiro</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/js/home.js"></script>
+</body>
+</html>

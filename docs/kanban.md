@@ -1,5 +1,7 @@
 ---
+
 kanban-plugin: board
+
 ---
 
 ## Backlog
@@ -9,29 +11,24 @@ kanban-plugin: board
 - [ ] Configuração de deploy único no Render (FastAPI servindo front e API na mesma URL) #deploy #producao
 - [ ] Validação de ponta a ponta em produção com HTTPS e cookie `Secure=True` #seguranca
 - [ ] Regras Pós-MVP: Painel administrativo para atribuição de perfis (Aluno, Professor) e matrícula (doc 03) #futuro
+- [ ] Implementar fluxo de backend para envio de e-mail e validação de token em `frontend/recuperacao.html` #futuro #backend
+- [ ] Implementar Soft Delete para Usuários (Data de Desligamento) #futuro
+	
+	Substituir a exclusão física (`DELETE`) de usuários pela exclusão lógica (_Soft Delete_). O objetivo é manter o histórico, garantir a integridade referencial do banco de dados (faturas, logs, etc.) e possibilitar auditorias futuras, alinhando-se às melhores práticas de sistemas corporativos (CRMs, ERPs).
 
 
 ## A fazer
 
 - [ ] Decisão sobre obrigatoriedade de CPF e RG (avaliar NOT NULL vs LGPD e exceções de imigrantes) #banco #backend
-- [ ] Criação da folha de estilos unificada institucional (`frontend/static/css/style.css`) #frontend #css
-- [ ] Implementação da Tela de Login (`frontend/index.html`) adaptando layout de `frontend/test/login.html` #frontend
-- [ ] Implementação da Tela de Cadastro (`frontend/cadastro.html`) adaptando `frontend/test/cadastro.html` #frontend
-- [ ] Máscaras dinâmicas de telefone (fixo 10 dígitos / celular 11 dígitos) e CEP/CPF no front-end #frontend #js
-- [ ] Integração com serviço ViaCEP para autopreenchimento de endereço no cadastro #frontend #js
-- [ ] Validação interativa em tempo real com algoritmo de CPF (módulo 11) e força de senha #frontend #js
-- [ ] Implementação do Dashboard (`frontend/home.html`) adaptando `frontend/test/index.html` #frontend
-- [ ] Lógica de Route Guard no front-end: redirecionar para `/` se `/api/me` retornar 401 #frontend #js
 
 
 ## Em andamento
 
-- [ ] Centralização e acompanhamento do fluxo de desenvolvimento via quadro Kanban #gestao
 
 
 ## Feito
 
-**Complete**
+- [x] Centralização e acompanhamento do fluxo de desenvolvimento via quadro Kanban #gestao
 - [x] Modelagem do banco MySQL (`database/seed.sql`) com tabelas Permissoes, Usuarios e Endereco #banco
 - [x] Carga inicial de permissões institucionais e regra de perfil padrão 'Usuario' #banco
 - [x] Integridade atômica usuário-endereço: impedimento de endereços órfãos e usuários sem endereço (RN04 / RNF19) #banco #backend
@@ -46,6 +43,19 @@ kanban-plugin: board
 - [x] Exportação e sincronização da Postman Collection oficial com autenticação X-API-Key #docs
 - [x] Inclusão e catálogo dos protótipos e referências visuais da equipe em `frontend/test/` #frontend
 - [x] Especificação arquitetural completa e detalhada da interface web em `docs/05-modelagem-frontend.md` #docs
+- [x] Criação da folha de estilos unificada institucional (`frontend/static/css/style.css`) #frontend #css
+- [x] Implementação da Tela de Login (`frontend/index.html`) com suporte a RF05 e feedback visual #frontend
+- [x] Implementação da Tela de Cadastro (`frontend/cadastro.html`) com dados pessoais e endereço obrigatório #frontend
+- [x] Validação interativa em tempo real com algoritmo de CPF (módulo 11) e medidor de força de senha #frontend #js
+- [x] Integração com serviço ViaCEP para autopreenchimento de endereço e liberação manual de contingência #frontend #js
+- [x] Máscaras dinâmicas de telefone (fixo 10 dígitos / celular 11 dígitos) e CEP/CPF no front-end #frontend #js
+- [x] Implementação do Dashboard (`frontend/home.html`) exibindo dados completos do usuário e endereço #frontend
+- [x] Lógica de Route Guard no front-end: validação de sessão em `GET /api/me` e logout seguro #frontend #js
+- [x] Inclusão e refatoração da tela de Recuperação de Senha (`frontend/recuperacao.html` e rota `GET /recuperacao`) #frontend
+- [x] Refatoração visual com biblioteca Bootstrap Icons eliminando emojis e profissionalizando a interface #frontend
+- [x] Documentação detalhada da arquitetura do servidor e rotas em `docs/06-arquitetura-servidor-e-rotas.md` #docs
+
+
 
 
 %% kanban:settings

@@ -84,3 +84,13 @@ def pagina_home():
     if os.path.exists(caminho):
         return FileResponse(caminho)
     return {"mensagem": "Página inicial em construção."}
+
+
+@app.get("/recuperacao", include_in_schema=False)
+def pagina_recuperacao():
+    """Retorna a tela de Recuperação de Senha."""
+    caminho = os.path.join(frontend_dir, "recuperacao.html")
+    if os.path.exists(caminho):
+        return FileResponse(caminho)
+    return {"mensagem": "Página de recuperação em construção."}
+

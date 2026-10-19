@@ -106,8 +106,11 @@ ello-mineiro-mvp/
 
 ---
 
-## 6. Próximos Passos (Apresentação e Pós-MVP)
+## 6. Próximos Passos (Transição para POO e Apresentação)
 
-1. Apresentação do projeto acadêmico utilizando o roteiro estruturado em `docs-apresentacao/infraestrutura-e-seguranca.md` e `docs-apresentacao/algoritmo-validacao-cpf.md`.
-2. Implementações futuras previstas no `docs/03-regras-futuras.md`: painel administrativo para atribuição de matrículas e fluxo completo de recuperação de senha por e-mail.
+1. **Criação da Branch `feature/refatoracao-poo`:** Iniciar a evolução arquitetural do backend para Programação Orientada a Objetos clássica, implementando as entidades `Usuario` e `Endereco` (focadas em Composição e Encapsulamento), as classes de repositório (`UsuarioRepository`, `EnderecoRepository`) e a camada de serviço `AuthService`, conforme especificado em [docs/07-planejamento-refatoracao-poo.md](07-planejamento-refatoracao-poo.md).
+2. **Garantia de Qualidade e Homologação:** Validar que a suíte de 11 testes automatizados (`test_api.py`) continue com 100% de sucesso sem quebra de contratos da API nem impacto na interface visual.
+3. **Apresentação Acadêmica:** Conduzir a apresentação perante a banca avaliadora com base no caderno estruturado em `docs-apresentacao/` (analogia do restaurante, infraestrutura na nuvem e dados sintéticos).
+4. **Funcionalidades Futuras (Pós-MVP):** Implementações futuras previstas em `docs/03-regras-futuras.md` (painel administrativo e recuperação de senha por e-mail).
+
 

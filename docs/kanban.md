@@ -16,6 +16,12 @@ kanban-plugin: board
 
 ## A fazer
 
+- [ ] Criação da branch `feature/refatoracao-poo` para evolução arquitetural do backend #git #poo
+- [ ] Implementação das classes de domínio puras `Usuario` e `Endereco` com Composição e Encapsulamento #backend #poo
+- [ ] Implementação das classes de repositório `UsuarioRepository` e `EnderecoRepository` com injeção de conexão #backend #poo
+- [ ] Implementação da camada de serviço `AuthService` desacoplando regras de negócio dos roteadores FastAPI #backend #poo
+- [ ] Validação de retrocompatibilidade total com a bateria de 11 testes automatizados (`test_api.py`) #testes #poo
+
 
 ## Em andamento
 

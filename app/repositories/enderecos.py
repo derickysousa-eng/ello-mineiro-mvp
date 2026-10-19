@@ -1,9 +1,12 @@
 """
-Repositório de Endereços com SQL Puro e queries parametrizadas (%s).
+Repositório de Endereços compatível com a camada de POO.
+Delega chamadas para a classe EnderecoRepository e a entidade Endereco.
 """
 
 from typing import Any, Dict, List
 import pymysql
+from app.domain.entities.endereco import Endereco
+from app.repositories.endereco_repository import EnderecoRepository
 from app.schemas import EnderecoCreateSchema
 
 
@@ -14,30 +17,22 @@ def criar_endereco(
 ) -> int:
     """
     Insere um endereço vinculado ao usuário com situacao padrão 'ATIVO'.
+    Utiliza a entidade Endereco e EnderecoRepository.
     """
-    sql = """
-        INSERT INTO Endereco (
-            usuario_id, tipo, cep, rua, numero, bairro,
-            complemento, cidade, uf, situacao
-        ) VALUES (
-            %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, 'ATIVO'
-        )
-    """
-    valores = (
-        usuario_id,
-        dados.tipo or "Residencial",
-        dados.cep,
-        dados.rua,
-        dados.numero,
-        dados.bairro,
-        dados.complemento,
-        dados.cidade,
-        dados.uf
+    entidade = Endereco(
+        usuario_id=usuario_id,
+        tipo=dados.tipo or "Residencial",
+        cep=dados.cep,
+        rua=dados.rua,
+        numero=dados.numero,
+        bairro=dados.bairro,
+        complemento=dados.complemento,
+        cidade=dados.cidade,
+        uf=dados.uf,
+        situacao="ATIVO"
     )
-    with conn.cursor() as cur:
-        cur.execute(sql, valores)
-        return cur.lastrowid
+    repo = EnderecoRepository(conn)
+    return repo.salvar(entidade)
 
 
 def listar_por_usuario(
@@ -45,15 +40,9 @@ def listar_por_usuario(
     usuario_id: int
 ) -> List[Dict[str, Any]]:
     """
-    Retorna todos os endereços ativos vinculados ao usuário informado.
+    Retorna todos os endereços ativos vinculados ao usuário informado em formato de dicionário.
     """
-    sql = """
-        SELECT id, tipo, cep, rua, numero, bairro,
-               complemento, cidade, uf, situacao
-        FROM Endereco
-        WHERE usuario_id = %s AND situacao = 'ATIVO'
-        ORDER BY id ASC
-    """
-    with conn.cursor() as cur:
-        cur.execute(sql, (usuario_id,))
-        return cur.fetchall() or []
+    repo = EnderecoRepository(conn)
+    enderecos = repo.listar_por_usuario(usuario_id)
+    return [e.to_dict() for e in enderecos]
+

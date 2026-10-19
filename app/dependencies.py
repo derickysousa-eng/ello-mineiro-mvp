@@ -7,7 +7,7 @@ from typing import Any, Dict
 from fastapi import Cookie, Depends, HTTPException, status
 import pymysql
 from app.db import get_db
-from app.repositories import usuarios as repo_usuarios
+from app.repositories.usuario_repository import UsuarioRepository
 from app.security import decodificar_token_jwt
 
 
@@ -40,17 +40,18 @@ def get_current_user(
             detail="Identificador de usuário inválido no token."
         )
 
-    usuario = repo_usuarios.buscar_por_id(conn, usuario_id)
+    repo = UsuarioRepository(conn)
+    usuario = repo.buscar_por_id(usuario_id)
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não encontrado."
         )
 
-    if not usuario.get("ativo"):
+    if not usuario.ativo:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Esta conta de usuário está desativada."
         )
 
-    return usuario
+    return usuario.to_dict()

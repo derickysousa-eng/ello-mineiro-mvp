@@ -121,7 +121,7 @@ Decidimos usar **SQL Puro com PyMySQL** pelos seguintes motivos fundamentais:
 
 ## 4. O Ciclo de Vida Completo de uma Requisição (Por Baixo dos Panos)
 
-Quando o aluno clica no botão **"Concluir Cadastro"** na interface, veja a jornada de milissegundos que a informação percorre:
+Quando o aluno clica no botão **"Concluir Cadastro"** na interface, veja a jornada de milissegundos que a informação percorre pela arquitetura orientada a objetos:
 
 ```
 [ Front-end: Clique no Botão ]
@@ -137,21 +137,36 @@ Quando o aluno clica no botão **"Concluir Cadastro"** na interface, veja a jorn
    Recalcula o Módulo 11 do CPF. Valida se a senha tem 8+ caracteres.
    Valida o formato do e-mail. Se falhar, retorna HTTP 422 humanizado.
              │
-             ▼ 4. Injeção de Conexão com o Banco (db.py - Depends(get_db))
-   Abre o canal cifrado com o TiDB Cloud na nuvem via túnel TLS/SSL.
+             ▼ 4. Camada de Serviço POO (AuthService)
+   Injeta a conexão (db.py) no AuthService.
+   Valida duplicidade com UsuarioRepository.verificar_conflito_unicidade.
+   Gera o hash irreversível da senha com Argon2id (security.py).
              │
-             ▼ 5. Criptografia da Senha (security.py)
-   Gera o hash irreversível da senha com Argon2id antes de tocar no disco.
+             ▼ 5. Modelagem de Domínio: Abstração, Encapsulamento e Composição
+   Instancia a entidade Usuario e a entidade Endereco.
+   Aplica Composição pura: usuario.vincular_endereco(endereco).
+   A senha permanece estritamente encapsulada no atributo privado _senha_hash.
              │
-             ▼ 6. Camada de Repositórios e CRUD Atômico (usuarios.py + enderecos.py)
-   Executa INSERT INTO Usuarios e INSERT INTO Endereco na mesma transação.
+             ▼ 6. Repositórios Orientados a Objetos e Transação Atômica ACID
+   UsuarioRepository.salvar(usuario) -> gera ID e vincula à entidade.
+   EnderecoRepository.salvar(endereco) -> persiste o endereço vinculado.
+   Executa conn.commit() tudo em uma única transação atômica.
              │
-             ▼ 7. Confirmação (conn.commit())
+             ▼ 7. Confirmação e Retorno
    O TiDB Cloud grava no armazenamento seguro distribuído.
+   Retorna HTTP 201 Created com os dados do usuário limpos (sem expor hash).
              │
-             ▼ 8. Resposta HTTP 201 Created
+             ▼ 8. Resposta no Navegador
 [ Front-end: Recebe Sucesso e Redireciona para o Login ]
 ```
+
+### 4.1. Pilares da Programação Orientada a Objetos Aplicados no Backend
+1. **Abstração Direta:** As classes [`Usuario`](file:///c:/Users/israe/Documents/ESTUDOS%20PROGRAMA%C3%87%C3%83O%20WEB/projeto-grau-tec/ello-mineiro-mvp/app/domain/entities/usuario.py) e [`Endereco`](file:///c:/Users/israe/Documents/ESTUDOS%20PROGRAMA%C3%87%C3%83O%20WEB/projeto-grau-tec/ello-mineiro-mvp/app/domain/entities/endereco.py) modelam com exatidão as entidades da realidade escolar sem abstrações desnecessárias.
+2. **Encapsulamento Estrito:** A senha com hash reside em `_senha_hash`. A própria entidade `Usuario` possui o método `verificar_senha(senha_pura)`, impedindo o vazamento de hashes na aplicação.
+3. **Composição em vez de Herança (*Composition over Inheritance*):** O usuário possui internamente o seu endereço (`self.endereco`), garantindo que dados de localização pertençam ao ciclo de vida do usuário.
+4. **Desacoplamento em Camadas (Repository & Service Patterns):**
+   * **`AuthService`:** Orquestra regras de negócio e transações ACID.
+   * **`UsuarioRepository` e `EnderecoRepository`:** Centralizam consultas SQL parametrizadas com `%s`, hidratando registros diretamente em objetos Python.
 
 ---
 

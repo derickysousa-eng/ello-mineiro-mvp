@@ -12,12 +12,13 @@ from app.db import get_db
 from app.repositories import enderecos as repo_enderecos
 from app.repositories import usuarios as repo_usuarios
 from app.schemas import UsuarioLoginSchema, UsuarioRegisterSchema
-from app.security import criar_token_jwt, gerar_hash_senha, verificar_senha
+from app.security import criar_token_jwt
 from app.security_guards import (
     rate_limit_login,
     rate_limit_register,
     validar_mutabilidade_segura,
 )
+from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -74,45 +75,21 @@ def registrar_usuario(
     conn: pymysql.Connection = Depends(get_db)
 ):
     """
-    Cadastra um novo usuário no sistema.
+    Cadastra um novo usuário no sistema através do serviço de domínio AuthService.
     - O perfil atribuído é sempre 'Usuario' (RN02 e RN05).
     - Valida duplicidade de login, e-mail, CPF e RG.
     - Executa a gravação do usuário e endereço em transação atômica.
     """
-    conflito = repo_usuarios.verificar_conflito_unicidade(
-        conn,
-        user_login=dados.user_login,
-        email=dados.email,
-        cpf=dados.cpf,
-        rg=dados.rg
-    )
-    if conflito:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Já existe um cadastro registrado com este '{conflito}'."
-        )
-
-    senha_hash = gerar_hash_senha(dados.senha)
-
-    try:
-        # Início da transação atômica (Usuário + Endereço Obrigatório)
-        novo_id = repo_usuarios.criar_usuario(conn, dados, senha_hash)
-        repo_enderecos.criar_endereco(conn, novo_id, dados.endereco)
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ocorreu um erro ao salvar o cadastro. Nenhuma alteração foi realizada."
-        )
+    auth_service = AuthService(conn)
+    usuario_criado = auth_service.cadastrar_usuario(dados)
 
     return {
         "mensagem": "Cadastro realizado com sucesso!",
         "usuario": {
-            "id": novo_id,
-            "user_login": dados.user_login,
-            "email": dados.email,
-            "permissao": "Usuario"
+            "id": usuario_criado.id,
+            "user_login": usuario_criado.user_login,
+            "email": usuario_criado.email,
+            "permissao": usuario_criado.permissao_nome
         }
     }
 
@@ -137,31 +114,17 @@ def login(
     conn: pymysql.Connection = Depends(get_db)
 ):
     """
-    Autentica o usuário por user_login ou email.
+    Autentica o usuário por user_login ou email via AuthService.
     Emite o token JWT armazenado em cookie seguro HttpOnly (RF06).
     """
-    usuario = repo_usuarios.buscar_para_autenticacao(conn, dados.identificador)
-
-    # Mensagem genérica para prevenir enumeração de contas (RNF07 / RNF10)
-    msg_erro = "Identificador ou senha incorretos."
-
-    if not usuario:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=msg_erro)
-
-    if not usuario.get("ativo"):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Esta conta está desativada. Entre em contato com a administração."
-        )
-
-    if not verificar_senha(dados.senha, usuario["senha_hash"]):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=msg_erro)
+    auth_service = AuthService(conn)
+    usuario = auth_service.autenticar(dados.identificador, dados.senha)
 
     # Gera token JWT
     token = criar_token_jwt(
-        usuario_id=usuario["id"],
-        user_login=usuario["user_login"],
-        permissao=usuario["permissao_nome"]
+        usuario_id=usuario.id,
+        user_login=usuario.user_login,
+        permissao=usuario.permissao_nome
     )
 
     # Grava o token em cookie seguro HttpOnly
@@ -178,9 +141,9 @@ def login(
     return {
         "mensagem": "Login realizado com sucesso!",
         "usuario": {
-            "id": usuario["id"],
-            "user_login": usuario["user_login"],
-            "permissao": usuario["permissao_nome"]
+            "id": usuario.id,
+            "user_login": usuario.user_login,
+            "permissao": usuario.permissao_nome
         }
     }
 

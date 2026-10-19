@@ -106,11 +106,12 @@ ello-mineiro-mvp/
 
 ---
 
-## 6. Próximos Passos (Transição para POO e Apresentação)
+## 6. Evolução Recente e Próximos Passos
 
-1. **Criação da Branch `feature/refatoracao-poo`:** Iniciar a evolução arquitetural do backend para Programação Orientada a Objetos clássica, implementando as entidades `Usuario` e `Endereco` (focadas em Composição e Encapsulamento), as classes de repositório (`UsuarioRepository`, `EnderecoRepository`) e a camada de serviço `AuthService`, conforme especificado em [docs/07-planejamento-refatoracao-poo.md](07-planejamento-refatoracao-poo.md).
-2. **Garantia de Qualidade e Homologação:** Validar que a suíte de 11 testes automatizados (`test_api.py`) continue com 100% de sucesso sem quebra de contratos da API nem impacto na interface visual.
+1. **Refatoração POO Implementada (`feature/refatoracao-poo`):** Concluída com sucesso a evolução arquitetural do backend para Programação Orientada a Objetos clássica, implementando as entidades de domínio `Usuario` e `Endereco` (focadas em Composição e Encapsulamento estrito), repositórios OOP (`UsuarioRepository`, `EnderecoRepository`), camada de serviço `AuthService` e retrocompatibilidade completa com roteadores FastAPI e front-end.
+2. **Garantia de Qualidade e Homologação:** Validado que a suíte completa de 11 testes automatizados (`test_api.py`) passou com 100% de sucesso sem quebra de contratos da API nem impacto na interface visual.
 3. **Apresentação Acadêmica:** Conduzir a apresentação perante a banca avaliadora com base no caderno estruturado em `docs-apresentacao/` (analogia do restaurante, infraestrutura na nuvem e dados sintéticos).
 4. **Funcionalidades Futuras (Pós-MVP):** Implementações futuras previstas em `docs/03-regras-futuras.md` (painel administrativo e recuperação de senha por e-mail).
+
 
 

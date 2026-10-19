@@ -16,17 +16,17 @@ kanban-plugin: board
 
 ## A fazer
 
-- [ ] Criação da branch `feature/refatoracao-poo` para evolução arquitetural do backend #git #poo
-- [ ] Implementação das classes de domínio puras `Usuario` e `Endereco` com Composição e Encapsulamento #backend #poo
-- [ ] Implementação das classes de repositório `UsuarioRepository` e `EnderecoRepository` com injeção de conexão #backend #poo
-- [ ] Implementação da camada de serviço `AuthService` desacoplando regras de negócio dos roteadores FastAPI #backend #poo
-- [ ] Validação de retrocompatibilidade total com a bateria de 11 testes automatizados (`test_api.py`) #testes #poo
-
 
 ## Em andamento
 
 
 ## Feito
+
+- [x] Criação da branch `feature/refatoracao-poo` para evolução arquitetural do backend #git #poo
+- [x] Implementação das classes de domínio puras `Usuario` e `Endereco` com Composição e Encapsulamento #backend #poo
+- [x] Implementação das classes de repositório `UsuarioRepository` e `EnderecoRepository` com injeção de conexão #backend #poo
+- [x] Implementação da camada de serviço `AuthService` desacoplando regras de negócio dos roteadores FastAPI #backend #poo
+- [x] Validação de retrocompatibilidade total com a bateria de 11 testes automatizados (`test_api.py`) #testes #poo
 
 - [x] Criação e homologação do cluster no TiDB Cloud Serverless (MySQL em nuvem AWS us-east-1) com TLS #banco #producao
 - [x] Configuração de deploy único no Render (FastAPI servindo front e API na mesma URL) com segredos protegidos #deploy #producao

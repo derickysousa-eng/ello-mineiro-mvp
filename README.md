@@ -1,171 +1,135 @@
 # Escola Particular Ello Mineiro — MVP
 
-Repositório do MVP (Produto Mínimo Viável) do sistema de gestão escolar da **Escola Particular Ello Mineiro**, desenvolvido como trabalho em grupo da disciplina de **Banco de Dados**.
+Repositório oficial do MVP (Produto Mínimo Viável) do sistema de gestão escolar da **Escola Particular Ello Mineiro**, desenvolvido como trabalho em grupo da disciplina de **Banco de Dados / Desenvolvimento Web**.
 
-A visão do sistema é centralizar a autenticação dos usuários para que, nas próximas fases, alunos consultem notas e frequência, professores façam os lançamentos acadêmicos e as equipes administrativa e de suporte gerenciem a plataforma. **Esta primeira fase cobre apenas cadastro e login**, com foco em segurança.
+A visão da plataforma é centralizar a gestão e autenticação acadêmica com foco em segurança, integridade relacional e experiência do usuário. **Esta primeira fase cobre o fluxo completo de cadastro institucional e login seguro**, preparando a base para as fases futuras de lançamento de notas, presença e gestão escolar.
 
-> **Status:** Backend implementado e testado com sucesso localmente. Próxima etapa: desenvolvimento da interface web. Veja a pasta [`docs/`](docs/).
+link produção: https://ello-mineiro-mvp.onrender.com/
 
 ---
 
-## Como Executar Localmente
+## 🚀 Status do Projeto e Deploy em Produção
+
+* **Status Atual:** ✅ **100% OPERACIONAL E EM PRODUÇÃO ATIVA**.
+* **Hospedagem da Aplicação (Full-Stack PaaS):** [Render](https://render.com) — Contêiner Linux executando FastAPI + Uvicorn na mesma origem (*Same-Origin Architecture*).
+* **Banco de Dados em Nuvem (DBaaS):** [TiDB Cloud Serverless](https://tidbcloud.com) — Banco Relacional Distribuído NewSQL compatível com MySQL 8.0, sediado na AWS (região `us-east-1` / N. Virginia) com criptografia obrigatória ponta a ponta via **TLS/SSL** (`DB_SSL=true`).
+* **Segurança de Variáveis de Ambiente:** Totalmente aderente ao padrão **12-Factor App** — zero credenciais expostas no código (*hardcoded*), com segredos gerenciados via variáveis de ambiente criptografadas no painel do Render e arquivo `.env` protegido localmente pelo `.gitignore`.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+### Backend e API
+* **Linguagem & Servidor:** **Python 3.10+** com servidor ASGI de alta performance **Uvicorn**.
+* **Framework:** **FastAPI** — Criação de rotas RESTful assíncronas, documentação interativa automática (Swagger/OpenAPI em `/docs` e ReDoc em `/redoc`).
+* **Validação de Dados e Contratos:** **Pydantic v2** — Validações estritas de tipos, contratos de requisição/resposta e recálculo do algoritmo oficial do Módulo 11 de CPF.
+* **Acesso ao Banco de Dados:** **SQL Puro com PyMySQL** — Queries 100% parametrizadas (proteção absoluta contra SQL Injection), sem ORMs pesados, demonstrando domínio pleno da linguagem SQL.
+* **Segurança e Criptografia:**
+  * **Argon2id (`argon2-cffi`):** Hashing de senhas resistente a ataques de força bruta com hardware especializado (GPUs/ASICs).
+  * **PyJWT:** Assinatura digital de tokens de sessão com algoritmo HMAC-SHA256.
+  * **Cookies HttpOnly:** Entrega de token via cookie seguro (`HttpOnly; Secure; SameSite=Lax`), tornando o sistema imune a roubo de sessão via ataques XSS (*Cross-Site Scripting*).
+  * **Rate Limiting por IP (`RNF07`):** Limitador de taxa em memória por janela deslizante (*Sliding Window*) com resposta `HTTP 429 Too Many Requests`.
+  * **Guarda de Mutabilidade (`X-API-Key` + *Same-Origin*):** Autorização transparente para navegação no site oficial e exigência de chave privada para clientes externos/robôs (`HTTP 403 Forbidden`).
+
+### Front-end e Experiência do Usuário (UI/UX)
+* **Arquitetura Vanilla:** **HTML5 Semântico**, **CSS3 Moderno** e **JavaScript ES6+ Nativo** servidos diretamente pelo backend (`GET /`, `GET /cadastro`, `GET /home`, `GET /recuperacao`), eliminando complexidade e custos de CORS.
+* **Design System Institucional:** Folha de estilos centralizada ([frontend/static/css/style.css](frontend/static/css/style.css)) com variáveis CSS (`:root`), paleta em Azul Marinho Real (`#1A365D`) e Dourado Nobre (`#CFAD6D`).
+* **Iconografia Profissional:** Biblioteca **Bootstrap Icons** via CDN (iconografia vetorial 100% SVG, sem uso de emojis informais).
+* **Lógica Inteligente do Cliente ([frontend/static/js/auth.js](frontend/static/js/auth.js)):**
+  * **Title Case Automático:** Converte nomes próprios capitalizando iniciais e preservando preposições em minúsculas (`da`, `de`, `do`, `dos`, `das`, `e`).
+  * **Máscaras Dinâmicas:** Formatação adaptativa em tempo real para CPF, RG flexível (7 a 13 dígitos) e telefones (fixo de 10 dígitos vs. celular de 11 dígitos).
+  * **Medidor de Força de Senha:** Cálculo de entropia e validação visual de requisitos de segurança.
+  * **Route Guard no Dashboard ([frontend/static/js/home.js](frontend/static/js/home.js)):** Validação ativa de sessão chamando `GET /api/me` e mascaramento de dados sensíveis na tela com asteriscos centrais para preservar a privacidade do aluno.
+
+### APIs e Serviços Externos
+* **ViaCEP (Webservice dos Correios):** Integração assíncrona que autocompleta automaticamente Rua, Bairro, Cidade e Estado ao digitar o 8º dígito do CEP, acompanhada de mecanismo de contingência para liberação manual imediata caso o serviço oscile.
+
+---
+
+## 🌿 Estratégia de Branches e Evolução Arquitetural
+
+Adotamos o fluxo de desenvolvimento profissional com segregação de fases via Git:
+
+* **Branch `main` (Versão 1 — MVP Estável em Produção):**
+  * Contém a aplicação consolidada em produção ativa no Render e TiDB Cloud.
+  * Backend estruturado com repositórios SQL puros, POO aplicada em schemas/validadores Pydantic e rate limiting.
+* **Branch `feature/refatoracao-poo` (Versão 2 — Orientação a Objetos Avançada):**
+  * Branch planejada para os ajustes finos de **Programação Orientada a Objetos (POO)** exigidos pela disciplina.
+  * Introdução de entidades de domínio diretas (`class Usuario` e `class Endereco`), priorizando o princípio de **Composição sobre Herança** (`Usuario` compondo `Endereco`), **Abstração Direta** (mapeamento 1:1 com o banco) e **Encapsulamento** rigoroso de métodos de negócio (`verificar_senha()`, formatações e mascaramentos), acompanhadas de classes de serviço (`AuthService`) e repositórios orientados a objetos.
+  * Todo o planejamento técnico desta migração encontra-se detalhado em [docs/07-planejamento-refatoracao-poo.md](docs/07-planejamento-refatoracao-poo.md).
+
+---
+
+## 💻 Como Executar o Projeto Localmente
 
 ### 1. Pré-requisitos
 * **Python 3.10+** instalado.
-* **MySQL** ativo (via **XAMPP**, Docker ou serviço local) com o script [`database/seed.sql`](database/seed.sql) executado no banco `ello_mineiro`.
-* Arquivo `.env` configurado na raiz com as credenciais do banco (use [`.env.example`](.env.example) como base).
+* Conexão ativa com o banco MySQL local ou string remota do **TiDB Cloud**.
+* Arquivo `.env` configurado na raiz com base no [`.env.example`](.env.example).
 
 ### 2. Preparação do Ambiente Virtual (venv)
 
-#### Criar o ambiente virtual (apenas na primeira vez):
 ```bash
+# 1. Criar o ambiente virtual
 python -m venv .venv
-```
 
-#### Ativar o ambiente virtual:
-* **No Windows (PowerShell):**
-  ```powershell
-  .\.venv\Scripts\Activate.ps1
-  ```
-  *(Se o PowerShell bloquear a execução de scripts, execute uma vez como Administrador: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`)*
+# 2. Ativar o ambiente virtual:
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# Windows (CMD):
+.\.venv\Scripts\activate.bat
+# Linux/macOS:
+source .venv/bin/activate
 
-* **No Windows (Prompt de Comando / CMD):**
-  ```cmd
-  .\.venv\Scripts\activate.bat
-  ```
-
-* **No Linux ou macOS (Bash / Zsh):**
-  ```bash
-  source .venv/bin/activate
-  ```
-
-> 💡 **Dica:** Quando a venv estiver ativa, o início da linha do terminal exibirá o prefixo `(.venv)`. A partir daí, você pode usar os comandos normais (`pip`, `python`, `uvicorn`) sem precisar referenciar o caminho completo da pasta!
-
-#### Instalar as dependências:
-```bash
+# 3. Instalar as dependências do projeto
 pip install -r requirements.txt
 ```
 
----
-
-### 3. Inicialização do Backend
-Com a venv ativa:
+### 3. Inicialização do Servidor Local
 ```bash
 uvicorn app.main:app --reload
 ```
-O servidor estará rodando em: **`http://localhost:8000`**
+A aplicação estará disponível em: **`http://localhost:8000`**
 
----
-
-### 4. Documentação Interativa da API (Swagger & Postman)
-Com o servidor rodando, acesse no navegador:
+### 4. Documentação Interativa da API
+Com o servidor rodando, acesse:
 * **Swagger UI:** [`http://localhost:8000/docs`](http://localhost:8000/docs)
-* **ReDoc alternativo:** [`http://localhost:8000/redoc`](http://localhost:8000/redoc)
-* **Postman Collection pronta:** Você pode importar diretamente o arquivo oficial [`docs/ello_mineiro_postman_collection.json`](docs/ello_mineiro_postman_collection.json) no Postman para ter todas as rotas e payloads de exemplo pré-configurados!
+* **ReDoc:** [`http://localhost:8000/redoc`](http://localhost:8000/redoc)
+* **Postman Collection:** Importe o arquivo [`docs/ello_mineiro_postman_collection.json`](docs/ello_mineiro_postman_collection.json) com todos os payloads e autenticação pré-configurados.
 
-Permite testar visualmente todas as rotas de cadastro, login, logout e `/me` diretamente pela interface.
-
----
-
-### 5. Teste de Integridade e Saúde da API
-Para verificar se a API está online e se a conexão com o banco MySQL está funcionando:
-* **Pelo navegador:** [`http://localhost:8000/health`](http://localhost:8000/health)
-* **Retorno esperado:**
-  ```json
-  {
-    "status": "online",
-    "banco": "conectado",
-    "db_check": true
-  }
-  ```
-
----
-
-### 6. Execução da Bateria de Testes Automatizados
-Com a venv ativa, execute o script de validação de ponta a ponta que testa automaticamente o health check, cadastro com perfil fixo, detecção de duplicidade (409), login, cookie HttpOnly e `/me`:
+### 5. Execução da Bateria de Testes Automatizados
 ```bash
+# Executa os 11 cenários de testes de segurança, integridade e negócio
 python test_api.py
 ```
 
-*(Para desativar o ambiente virtual quando terminar de trabalhar, basta digitar `deactivate` no terminal).*
+---
+
+## 🗄️ Estrutura do Banco de Dados Relacional (MySQL / TiDB Cloud)
+
+O esquema oficial encontra-se em [`database/seed.sql`](database/seed.sql):
+* **`Permissoes`:** Perfis fixos de acesso (`Usuario`, `Aluno`, `Professor`, `Suporte`, `Administrativo`).
+* **`Usuarios`:** Credenciais (`user_login`, `email`, `senha_hash`), perfil atribuído e dados civis obrigatórios (`cpf`, `rg`).
+* **`Endereco`:** Endereço residencial atrelado ao usuário em transação atômica (`usuario_id` com `ON DELETE CASCADE`).
 
 ---
 
-## Escopo da Fase 1
+## 📚 Documentação Técnica Completa
 
-| Dentro | Fora (fases futuras) |
-|---|---|
-| Cadastro público de usuários | Promoção de perfil pelo setor administrativo |
-| Login com `user_login` ou e-mail + senha | Matrícula do aluno e registro funcional |
-| Tela Home pós-login | Turmas, notas, presença, matérias, calendário |
-| Armazenamento seguro de senhas | — |
+### Engenharia de Software e Especificações (`docs/`)
+1. [00-contexto-handoff.md](docs/00-contexto-handoff.md) — Passagem de bastão, status atual e arquitetura geral.
+2. [01-requisitos.md](docs/01-requisitos.md) — Requisitos funcionais (RF), não funcionais (RNF) e regras de negócio (RN).
+3. [02-decisoes-arquitetura.md](docs/02-decisoes-arquitetura.md) — Decisões de stack, deploy único e SQL puro.
+4. [03-regras-futuras.md](docs/03-regras-futuras.md) — Regras para fases pós-MVP (matrículas, turmas, notas).
+5. [04-guia-execucao-e-ambiente.md](docs/04-guia-execucao-e-ambiente.md) — Guia do XAMPP, DBeaver, `.env` e pipeline.
+6. [05-modelagem-frontend.md](docs/05-modelagem-frontend.md) — Especificação detalhada da interface web e componentes.
+7. [06-arquitetura-servidor-e-rotas.md](docs/06-arquitetura-servidor-e-rotas.md) — Lógica do `main.py`, rotas estáticas e centralização CSS.
+8. [07-planejamento-refatoracao-poo.md](docs/07-planejamento-refatoracao-poo.md) — Planejamento técnico da refatoração para POO na branch `feature/refatoracao-poo`.
+9. [kanban.md](docs/kanban.md) — Quadro Kanban oficial de acompanhamento de tarefas.
 
-Todo usuário cadastrado recebe o perfil padrão **`Usuario`**. Os perfis `Aluno`, `Professor`, `Suporte` e `Administrativo` já existem no banco, mas só serão atribuídos no futuro pelo setor administrativo ([regras futuras](docs/03-regras-futuras.md)).
-
-### Front-end (estático)
-HTML, CSS e JavaScript servidos pelo próprio backend, consumindo a API em `/api/*` com URLs relativas.
-* **Login (`/`):** autenticação com `user_login` (nome de usuário) **ou** e-mail e senha.
-* **Cadastro (`/cadastro`):** formulário de novos usuários. **Não há escolha de perfil.**
-* **Home (`/home`):** página exibida após o login; os dados vêm de `GET /api/me`.
-
-### Backend e API
-| Método | Rota | Descrição |
-|---|---|---|
-| POST | `/api/auth/register` | Cria o usuário com o perfil `Usuario` |
-| POST | `/api/auth/login` | Valida credenciais e grava o JWT em cookie `HttpOnly` |
-| POST | `/api/auth/logout` | Apaga o cookie de sessão |
-| GET | `/api/me` | Dados do usuário logado (sem a senha) |
-| GET | `/health` | Verifica se a aplicação está no ar |
-
-Contrato completo em [docs/01-requisitos.md](docs/01-requisitos.md).
-
-### Segurança
-* Senhas guardadas apenas como hash **Argon2id** ou **bcrypt**; nunca em texto puro.
-* JWT (HS256, expiração curta) em cookie **`HttpOnly; Secure; SameSite=Lax`**: o JavaScript não acessa o token.
-* Proteção contra CSRF (`SameSite`, `POST` só com JSON, checagem de `Origin`).
-* SQL sempre parametrizado (prevenção de SQL Injection).
-* Segredos em variáveis de ambiente; front e API na mesma origem (sem CORS).
-* Dados pessoais (CPF, RG) tratados conforme a LGPD.
-
-### Banco de dados (MySQL)
-Esquema em [`database/seed.sql`](database/seed.sql):
-* **`Permissoes`:** perfis fixos (`Usuario`, `Aluno`, `Professor`, `Suporte`, `Administrativo`).
-* **`Usuarios`:** credenciais (`user_login`, e-mail, `senha_hash`), perfil e dados pessoais.
-* **`Endereco`:** endereços do usuário (relacionamento 1:N).
-
----
-
-## Tecnologias
-
-| Camada | Escolha |
-|---|---|
-| Front-end | HTML5, CSS3, JavaScript (Fetch API) |
-| Backend | Python + **FastAPI** (Swagger automático em `/docs`) |
-| Acesso ao banco | **SQL puro** com PyMySQL (sem ORM), concentrado em `app/repositories/` |
-| Banco | **MySQL** (TiDB Cloud Serverless) |
-| Segurança | `argon2-cffi` ou `bcrypt` (hash) e PyJWT (token) |
-| Hospedagem | **Render**: deploy único, front e API na mesma URL |
-
----
-
-## Estrutura do repositório
-
-```
-app/          código FastAPI (main.py, db.py, repositories/, routers/)
-database/     seed.sql (esquema do banco)
-frontend/     index.html, cadastro.html, home.html, static/, test/ (protótipos)
-docs/         requisitos, decisões de arquitetura e regras futuras
-```
-
-## Documentação
-
-1. [Contexto e ponto de retomada](docs/00-contexto-handoff.md)
-2. [Requisitos](docs/01-requisitos.md)
-3. [Decisões de arquitetura](docs/02-decisoes-arquitetura.md)
-4. [Regras de negócio futuras](docs/03-regras-futuras.md)
-5. [Guia de ambiente e execução](docs/04-guia-execucao-e-ambiente.md)
-6. [Modelagem e especificação do front-end](docs/05-modelagem-frontend.md)
-7. [Arquitetura do Servidor, Rotas e Centralização de Estilos](docs/06-arquitetura-servidor-e-rotas.md)
-8. [Quadro Kanban de Acompanhamento (Obsidian)](docs/kanban.md)
-
-
+### Caderno de Apresentação e Demonstração Acadêmica (`docs-apresentacao/`)
+1. [apresentacao-frontend.md](docs-apresentacao/apresentacao-frontend.md) — Interface, UX, bibliotecas e integração ViaCEP.
+2. [apresentacao-backend-e-banco.md](docs-apresentacao/apresentacao-backend-e-banco.md) — Arquitetura FastAPI, CRUD, SQL puro e transações atômicas.
+3. [infraestrutura-e-seguranca.md](docs-apresentacao/infraestrutura-e-seguranca.md) — Topologia Render + TiDB Cloud, 12-Factor App e segurança em camadas.
+4. [algoritmo-validacao-cpf.md](docs-apresentacao/algoritmo-validacao-cpf.md) — Fundamentação matemática do Módulo 11 e legislação da Receita Federal.
+5. [guia-cadastro-usuario-guiado.md](docs-apresentacao/guia-cadastro-usuario-guiado.md) — Roteiro de demonstração ao vivo com geradores sintéticos da 4Devs.

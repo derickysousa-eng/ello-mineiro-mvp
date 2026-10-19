@@ -66,6 +66,7 @@ ello-mineiro-mvp/
 │   ├── 04-guia-execucao-e-ambiente.md     # Guia do XAMPP, DBeaver, .env e pipeline
 │   ├── 05-modelagem-frontend.md           # Especificação detalhada da interface web
 │   ├── 06-arquitetura-servidor-e-rotas.md # Lógica do main.py, rotas estáticas e centralização CSS
+│   ├── 07-planejamento-refatoracao-poo.md # Planejamento arquitetural para POO na branch feature/refatoracao-poo
 │   ├── kanban.md                          # Quadro Kanban oficial integrado ao Obsidian
 │   └── ello_mineiro_postman_collection.json # Collection nativa pronta para o Postman
 ├── docs-apresentacao/                     # Materiais de suporte e roteiros para banca

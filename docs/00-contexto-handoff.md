@@ -16,6 +16,7 @@
 | Ícones da Interface | Biblioteca **Bootstrap Icons** via CDN (sem dependência de frameworks ou React, 100% vetorial/SVG, eliminando emojis) |
 | Sessão | Cookie **`HttpOnly; Secure; SameSite=Lax; Path=/`** (nome `access_token`). O navegador gerencia de forma transparente sem manipulação direta pelo JS |
 | Integridade de Endereço | **Atomicidade total (RN04 / RNF19):** Todo cadastro exige obrigatoriamente um endereço completo. Não existem usuários sem endereço nem endereços órfãos |
+| Documentos Pessoais | **CPF e RG Obrigatórios (`NOT NULL` e `UNIQUE`):** Validados estritamente no front-end (módulo 11 em tempo real e regex de RG), no backend (Pydantic com módulo 11) e no banco (`seed.sql`) |
 | Perfil no cadastro | Todo usuário nasce com o perfil padrão **`Usuario`**. Perfis avançados (`Aluno`, `Professor`, etc.) existem no banco para o futuro |
 | `user_login` | Nome de usuário escolhido pelo usuário (3–30 caracteres, `[a-zA-Z0-9._]`, case preservado no envio e exibição; busca e unicidade case-insensitive no MySQL `utf8mb4_unicode_ci`) |
 | Segurança de Mutabilidade | **Chave Privada (`X-API-Key`) + Mesma Origem (RNF18) + Rate Limiting (RNF07):** Mutações externas exigem `X-API-Key` (403 se ausente/inválida); navegação no site oficial opera com zero atrito via mesma origem; Rate Limiter barra abusos com 429 Too Many Requests |
@@ -24,13 +25,17 @@
 
 ## 3. Pontos de Atenção e Funcionalidades Implementadas
 
-### 📌 3.1. Revisão da Obrigatoriedade de CPF e RG:
-* **Contexto atual:** Atualmente no `seed.sql` e no `schemas.py`, os campos `cpf` e `rg` estão como opcionais (`NULL`), seguindo uma premissa inicial de LGPD.
-* **Problema identificado pelo usuário:** Por ser um MVP de curso técnico de escopo fechado que provavelmente não terá uma fase posterior de secretaria escolar para preenchimento de documentos, manter CPF e RG opcionais fará com que eles fiquem permanentemente vazios/órfãos nos cadastros de teste.
-* **Proposta em aberto:** Avaliar a alteração para torná-los **obrigatórios (`NOT NULL`)** no banco de dados, no schema Pydantic e no formulário do front-end.
-* **Casos de exceção a definir:** Como tratar alunos estrangeiros ou imigrantes sem documentos nacionais (ex.: permitir validação de RNE/Passaporte no RG ou exigir apenas CPF com dígitos válidos).
+### ✅ 3.1. Obrigatoriedade de CPF e RG (`NOT NULL`) — [DECIDIDO E IMPLEMENTADO 100%]:
+* **Decisão de Negócio Consolidada:** Por ser um MVP de curso técnico com escopo fechado sem etapa posterior de secretaria física, manter CPF e RG como opcionais deixaria dados vazios em testes e demonstrações acadêmicas.
+* **Implementação Realizada em Todas as Camadas:**
+  1. **Banco de Dados (`database/seed.sql`):** Atualizado para `cpf CHAR(11) NOT NULL UNIQUE` e `rg VARCHAR(30) NOT NULL UNIQUE`.
+  2. **Backend (`app/schemas.py`):** Ambos os campos são obrigatórios no `UsuarioRegisterSchema`. O `cpf` passa por cálculo matemático dos dígitos verificadores pelo algoritmo oficial do **módulo 11**, rejeitando CPFs inválidos ou com sequências repetidas. O `rg` valida a presença de 5 a 14 caracteres alfanuméricos úteis.
+  3. **Front-end (`frontend/cadastro.html` e `auth.js`):** Formulário com atributo `required`, máscara dinâmica de RG (7 a 13 dígitos úteis com suporte ao RN e dígito X), cálculo em tempo real do módulo 11 de CPF e bloqueio de submissão caso estejam ausentes ou incorretos.
+  4. **Proteção de Privacidade (`home.js`):** No dashboard autenticado, os dados sensíveis de CPF e RG são mascarados com asteriscos centrais para preservar a privacidade do usuário na interface.
+  5. **Bateria de Testes (`test_api.py`):** Bateria de testes atualizada para validar a obrigatoriedade (rejeitando com 422 cadastros sem CPF/RG) e homologada com **11/11 testes aprovados**.
 
 ### ✅ 3.2. Front-end e Integrações 100% Concluídos:
+
 1. **`frontend/index.html` (Rota `GET /`):** Login com suporte unificado a nome de usuário (`user_login`) ou e-mail (RF05), alternador de visualização de senha com ícones (`bi-eye` / `bi-eye-slash`), spinner de carregamento e link direto para recuperação de senha.
 2. **`frontend/cadastro.html` (Rota `GET /cadastro`):** Cadastro completo com Title Case inteligente para nomes (preservando `da, de, do, dos, das, e`), comboboxes padronizados do IBGE para `genero` e estados da federação para `uf`, máscaras dinâmicas adaptativas para telefone (10 dígitos fixo vs 11 dígitos celular), cálculo do algoritmo módulo 11 de CPF em tempo real, integração com ViaCEP (com liberação de edição manual em caso de indisponibilidade) e aceite formal de termos institucionais.
 3. **`frontend/home.html` (Rota `GET /home`):** Dashboard acadêmico integrado com Route Guard que valida sessão chamando `GET /api/me`. Exibe dados cadastrais e endereço completo vinculado, além de botão seguro de encerramento de sessão (Logout via `POST /api/auth/logout`).
@@ -41,10 +46,10 @@
 
 ## 4. Próxima Etapa de Execução (Passo 5 — Banco em Nuvem e Deploy)
 
-Com a API, o banco local e todo o front-end estático finalizados:
-1. **Decisão sobre CPF/RG:** Definir se a obrigatoriedade `NOT NULL` será aplicada ao `seed.sql` e ao backend.
-2. **Banco na Nuvem (TiDB Cloud):** Criação da instância serverless gratuita do TiDB (compatível com MySQL), execução do `seed.sql` e teste de conexão via string remota com SSL obrigatório.
-3. **Deploy Único no Render:** Configurar repositório no Render Web Service com variáveis de ambiente (`DB_*`, `JWT_SECRET_KEY`, `API_KEY`) e comando `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+Com a API, as validações de CPF/RG obrigatórios (`NOT NULL`), o banco local e todo o front-end estático finalizados e testados com 100% de sucesso:
+1. **Banco na Nuvem (TiDB Cloud Serverless):** Criação da instância serverless gratuita do TiDB (compatível com MySQL), execução do `database/seed.sql` atualizado e teste de conexão via string remota com SSL obrigatório.
+2. **Deploy Único no Render:** Configurar repositório no Render Web Service com variáveis de ambiente (`DB_*`, `JWT_SECRET_KEY`, `API_KEY`) e comando de inicialização `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+
 
 ---
 
@@ -95,4 +100,5 @@ ello-mineiro-mvp/
 
 ## 6. Prompt para Iniciar a Próxima Sessão no Chat
 
-> "Leia `docs/00-contexto-handoff.md`, `docs/06-arquitetura-servidor-e-rotas.md` e `docs/kanban.md`. O backend FastAPI com SQL puro, o banco MySQL local, as proteções de segurança e o front-end web completo (`/`, `/cadastro`, `/home`, `/recuperacao` com Bootstrap Icons e ViaCEP) estão 100% implementados e validados. Vamos deliberar sobre a obrigatoriedade de CPF/RG (item 3.1) e iniciar os preparativos para o banco na nuvem (TiDB Cloud) e o deploy no Render."
+> "Leia `docs/00-contexto-handoff.md`, `docs/06-arquitetura-servidor-e-rotas.md` e `docs/kanban.md`. O backend FastAPI com SQL puro, as validações de CPF e RG obrigatórios (NOT NULL) em todas as camadas, as proteções de segurança e o front-end web completo estão 100% implementados e homologados por 11 testes automatizados. Vamos iniciar a configuração do banco na nuvem (TiDB Cloud Serverless) e o deploy no Render."
+

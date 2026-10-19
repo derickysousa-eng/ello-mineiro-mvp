@@ -30,8 +30,8 @@ CREATE TABLE Usuarios (
     permissao_nome VARCHAR(20) NOT NULL DEFAULT 'Usuario', -- Definido pelo backend, nunca pelo corpo da requisição (RN05)
     nome VARCHAR(100) NOT NULL,
     genero VARCHAR(20),
-    cpf CHAR(11) UNIQUE,                     -- Opcional no cadastro público (LGPD); só dígitos
-    rg VARCHAR(30) UNIQUE,                   -- Opcional no cadastro público (LGPD)
+    cpf CHAR(11) NOT NULL UNIQUE,                    -- Obrigatório no cadastro (11 dígitos puros, validado via módulo 11)
+    rg VARCHAR(30) NOT NULL UNIQUE,                  -- Obrigatório no cadastro (de 7 a 13 dígitos úteis)
     data_nasc DATE,
     telefone VARCHAR(11),                    -- Só dígitos: DDD + celular (11 dígitos, ex.: 31999998888). Validado no backend
     telefone_sec VARCHAR(11),                -- Idem telefone

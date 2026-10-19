@@ -22,7 +22,7 @@
 
 | ID | Requisito | Prioridade |
 |---|---|---|
-| RF01 | O sistema deve permitir cadastrar um usuário com: nome, e-mail, `user_login` (nome de usuário escolhido por ele), senha, endereço obrigatório e dados pessoais opcionais (CPF, RG, nascimento, gênero, telefones). **O formulário não oferece escolha de perfil** | Alta |
+| RF01 | O sistema deve permitir cadastrar um usuário com: nome, e-mail, `user_login` (nome de usuário escolhido por ele), senha, CPF obrigatório (validado via módulo 11), RG obrigatório (7 a 13 dígitos úteis), endereço residencial obrigatório e dados pessoais opcionais (nascimento, gênero, telefones). **O formulário não oferece escolha de perfil** | Alta |
 | RF02 | O sistema deve exigir obrigatoriamente o cadastro de ao menos um endereço residencial/comercial no momento do registro. Cadastros sem endereço ou com dados de logradouro incompletos são rejeitados com erro 422 | Alta |
 | RF03 | O sistema deve validar unicidade de `user_login`, `email`, `cpf` e `rg` e retornar erro claro em caso de duplicidade | Alta |
 | RF04 | O sistema deve validar formato de e-mail, CPF (dígitos verificadores), CEP, UF e telefone (exatamente 11 dígitos numéricos: DDD + celular; o front envia só dígitos, sem máscara) | Alta |
@@ -137,7 +137,7 @@ Set-Cookie: access_token=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0
 | Perfil padrão | **Feito:** `Usuario` inserido em `Permissoes` e `permissao_nome DEFAULT 'Usuario'` |
 | Comentário de `user_login` | **Feito:** "nome de usuário escolhido pelo usuário" |
 | `Permissoes` com PK textual | Mantida (ok para MVP; `ON UPDATE CASCADE` já mitiga) |
-| `cpf`, `rg` UNIQUE e nullable | Mantidos opcionais (LGPD, doc 03 §6). MySQL permite vários NULL |
+| `cpf`, `rg` NOT NULL e UNIQUE | **Decidido:** Obrigatórios no cadastro (`NOT NULL` e `UNIQUE`). Validados em todas as camadas (front-end, backend com módulo 11 e banco de dados) |
 | `telefone VARCHAR(11)` | **Decidido:** só dígitos, DDD + número (11). Aplicado em `telefone` e `telefone_sec` |
 | `atualizado_em` / `ultimo_login` | **Decidido:** fora do MVP (previstos como auditoria futura, doc 03 §7) |
 | `Endereco.situacao` | **Feito:** `NOT NULL DEFAULT 'ATIVO'` + `CHECK (situacao IN ('ATIVO','INATIVO'))`. O backend também valida (o `CHECK` só é aplicado no MySQL 8.0.16+; no TiDB depende de `tidb_enable_check_constraint`) |

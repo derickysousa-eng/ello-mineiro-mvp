@@ -460,7 +460,13 @@ function initCadastro() {
     }
 
     if (!validarCPF(cpfLimpo)) {
-      showAlert("cadastro-alert", "error", "O CPF informado é inválido. Verifique os números digitados.");
+      showAlert("cadastro-alert", "error", "O CPF informado é inválido ou incompleto. Verifique os números digitados.");
+      return;
+    }
+
+    const cleanRg = rg.toUpperCase().replace(/[^0-9X]/g, "");
+    if (!rg || cleanRg.length < 5 || cleanRg.length > 14) {
+      showAlert("cadastro-alert", "error", "O preenchimento do RG é obrigatório (entre 7 e 13 dígitos úteis).");
       return;
     }
 
@@ -468,6 +474,7 @@ function initCadastro() {
       showAlert("cadastro-alert", "error", "O CEP deve conter 8 dígitos.");
       return;
     }
+
 
     if (!rua || !numero || !bairro || !cidade || !uf) {
       showAlert("cadastro-alert", "error", "Preencha todos os campos obrigatórios do endereço residencial.");

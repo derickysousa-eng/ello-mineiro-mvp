@@ -19,7 +19,8 @@ kanban-plugin: board
 
 ## A fazer
 
-- [ ] Decisão sobre obrigatoriedade de CPF e RG (avaliar NOT NULL vs LGPD e exceções de imigrantes) #banco #backend
+- [ ] Criação e homologação do cluster no TiDB Cloud Serverless (MySQL em nuvem) #banco #producao
+- [ ] Configuração de deploy único no Render (FastAPI servindo front e API na mesma URL) #deploy #producao
 
 
 ## Em andamento
@@ -28,6 +29,7 @@ kanban-plugin: board
 
 ## Feito
 
+- [x] Obrigatoriedade de CPF e RG (NOT NULL e UNIQUE) implementada no seed.sql, schemas Pydantic (módulo 11), front-end e testes #banco #backend #frontend
 - [x] Centralização e acompanhamento do fluxo de desenvolvimento via quadro Kanban #gestao
 - [x] Modelagem do banco MySQL (`database/seed.sql`) com tabelas Permissoes, Usuarios e Endereco #banco
 - [x] Carga inicial de permissões institucionais e regra de perfil padrão 'Usuario' #banco

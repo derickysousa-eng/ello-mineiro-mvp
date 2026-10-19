@@ -30,6 +30,19 @@ def gerar_digitos_aleatorios(qtd: int) -> str:
     return "".join([str(random.randint(0, 9)) for _ in range(qtd)])
 
 
+def gerar_cpf_valido() -> str:
+    """Gera um CPF matematicamente válido com os dois dígitos verificadores do módulo 11."""
+    nove_digitos = [random.randint(0, 9) for _ in range(9)]
+    soma1 = sum(nove_digitos[i] * (10 - i) for i in range(9))
+    resto1 = (soma1 * 10) % 11
+    d1 = 0 if resto1 in (10, 11) else resto1
+    dez_digitos = nove_digitos + [d1]
+    soma2 = sum(dez_digitos[i] * (11 - i) for i in range(10))
+    resto2 = (soma2 * 10) % 11
+    d2 = 0 if resto2 in (10, 11) else resto2
+    return "".join(map(str, dez_digitos + [d2]))
+
+
 def executar_testes():
     print("=" * 70)
     print("INICIANDO BATERIA COMPLETA DE TESTES DE SEGURANÇA E API E BANCO LOCAL")
@@ -59,7 +72,7 @@ def executar_testes():
 
     # 4. Cadastro novo COMPLETO (com todos os campos opcionais preenchidos) via X-API-Key
     login_completo = f"aluno_full_{random.randint(1000, 9999)}"
-    cpf_aleatorio = gerar_digitos_aleatorios(11)
+    cpf_valido_full = gerar_cpf_valido()
     rg_aleatorio = f"MG{gerar_digitos_aleatorios(7)}"
 
     payload_completo = {
@@ -68,7 +81,7 @@ def executar_testes():
         "senha": "SenhaForte123!",
         "nome": "Aluno Teste Completo da Silva",
         "genero": "Masculino",
-        "cpf": cpf_aleatorio,
+        "cpf": cpf_valido_full,
         "rg": rg_aleatorio,
         "data_nasc": "2001-08-20",
         "telefone": "31988887777",
@@ -90,16 +103,19 @@ def executar_testes():
     print(f"Status: {res_reg_full.status_code} | Resposta: {res_reg_full.json()}")
     assert res_reg_full.status_code == 201, "Cadastro com todos os campos preenchidos falhou!"
 
-    # 5. Cadastro com campos opcionais NÃO PREENCHIDOS (None / null na tabela Usuarios)
+    # 5. Cadastro com campos opcionais NÃO PREENCHIDOS (genero, data_nasc, telefones = None) e CPF/RG OBRIGATÓRIOS
     login_vazio = f"aluno_vazio_{random.randint(1000, 9999)}"
+    cpf_valido_vazio = gerar_cpf_valido()
+    rg_valido_vazio = f"SP{gerar_digitos_aleatorios(7)}"
+
     payload_nao_preenchidos = {
         "user_login": login_vazio,
         "email": f"{login_vazio}@escola.com",
         "senha": "SenhaForte123!",
-        "nome": "Aluno Sem Opcionais",
+        "nome": "Usuario Sem Opcionais",
         "genero": None,
-        "cpf": None,
-        "rg": None,
+        "cpf": cpf_valido_vazio,
+        "rg": rg_valido_vazio,
         "data_nasc": None,
         "telefone": None,
         "telefone_sec": None,
@@ -115,7 +131,7 @@ def executar_testes():
         }
     }
 
-    print(f"\n[5/11] Testando POST /api/auth/register com campos opcionais NÃO preenchidos ({login_vazio})...")
+    print(f"\n[5/11] Testando POST /api/auth/register com campos opcionais NÃO preenchidos e CPF/RG obrigatórios ({login_vazio})...")
     res_reg_vazio = client.post("/api/auth/register", json=payload_nao_preenchidos, headers=HEADER_API_KEY)
     print(f"Status: {res_reg_vazio.status_code} | Resposta: {res_reg_vazio.json()}")
     assert res_reg_vazio.status_code == 201, "Cadastro com campos opcionais vazios falhou!"
@@ -125,7 +141,7 @@ def executar_testes():
     payload_front = payload_completo.copy()
     payload_front["user_login"] = login_front
     payload_front["email"] = f"{login_front}@escola.com"
-    payload_front["cpf"] = gerar_digitos_aleatorios(11)
+    payload_front["cpf"] = gerar_cpf_valido()
     payload_front["rg"] = f"MG{gerar_digitos_aleatorios(7)}"
 
     print(f"\n[6/11] Testando POST /api/auth/register simulando front-end legítimo (mesma origem, zero atrito)...")
@@ -133,17 +149,17 @@ def executar_testes():
     print(f"Status: {res_front.status_code} | Resposta: {res_front.json()}")
     assert res_front.status_code == 201, "Cadastro de mesma origem pelo front-end falhou!"
 
-    # 7. Rejeição de Cadastro SEM Endereço (422 Unprocessable Entity)
-    print("\n[7/11] Testando rejeição de cadastro SEM endereço (422)...")
+    # 7. Rejeição de Cadastro SEM Endereço e SEM CPF/RG (422 Unprocessable Entity)
+    print("\n[7/11] Testando rejeição de cadastro SEM endereço e SEM CPF obrigatório (422)...")
     payload_sem_endereco = payload_completo.copy()
     payload_sem_endereco["user_login"] = f"sem_end_{random.randint(1000, 9999)}"
     payload_sem_endereco["email"] = f"{payload_sem_endereco['user_login']}@escola.com"
-    payload_sem_endereco["cpf"] = gerar_digitos_aleatorios(11)
-    payload_sem_endereco["rg"] = f"MG{gerar_digitos_aleatorios(7)}"
+    payload_sem_endereco["cpf"] = None
     payload_sem_endereco["endereco"] = None
     res_sem_end = client.post("/api/auth/register", json=payload_sem_endereco, headers=HEADER_API_KEY)
     print(f"Status: {res_sem_end.status_code} | Resposta: {res_sem_end.json()}")
-    assert res_sem_end.status_code == 422, "API permitiu cadastro sem endereço!"
+    assert res_sem_end.status_code == 422, "API permitiu cadastro sem endereço ou sem CPF!"
+
 
     # 8. Teste de Duplicidade (409 Conflict)
     print("\n[8/11] Testando detecção de duplicidade (409 Conflict)...")
@@ -171,14 +187,15 @@ def executar_testes():
     assert res_me.status_code == 200, "Consulta a /api/me falhou!"
     dados_me = res_me.json()
     assert dados_me["user_login"] == login_vazio
-    assert dados_me["genero"] is None, "genero deveria ser None!"
-    assert dados_me["cpf"] is None, "cpf deveria ser None!"
-    assert dados_me["rg"] is None, "rg deveria ser None!"
-    assert dados_me["data_nasc"] is None, "data_nasc deveria ser None!"
-    assert dados_me["telefone"] is None, "telefone deveria ser None!"
-    assert dados_me["telefone_sec"] is None, "telefone_sec deveria ser None!"
+    assert dados_me["cpf"] == cpf_valido_vazio, "cpf obrigatório não confere!"
+    assert dados_me["rg"] == rg_valido_vazio, "rg obrigatório não confere!"
+    assert dados_me["genero"] is None, "genero opcional deveria ser None!"
+    assert dados_me["data_nasc"] is None, "data_nasc opcional deveria ser None!"
+    assert dados_me["telefone"] is None, "telefone opcional deveria ser None!"
+    assert dados_me["telefone_sec"] is None, "telefone_sec opcional deveria ser None!"
     assert len(dados_me["enderecos"]) == 1, "Usuário deveria ter exatamente 1 endereço vinculado!"
-    print("Dados retornados validados: todos os campos opcionais são None e endereço está ativo.")
+    print("Dados retornados validados: CPF e RG obrigatórios presentes, campos opcionais são None e endereço está ativo.")
+
 
     res_logout = client.post("/api/auth/logout", headers=HEADER_API_KEY)
     assert res_logout.status_code == 200, "Logout falhou!"

@@ -70,8 +70,8 @@ class UsuarioRegisterSchema(BaseModel):
     senha: str = Field(min_length=8, max_length=128)
     nome: str = Field(min_length=2, max_length=100)
     genero: Optional[str] = Field(default=None, max_length=20)
-    cpf: Optional[str] = Field(default=None, max_length=14)
-    rg: Optional[str] = Field(default=None, max_length=30)
+    cpf: str = Field(min_length=11, max_length=14, description="CPF obrigatório (11 dígitos puros)")
+    rg: str = Field(min_length=5, max_length=30, description="RG obrigatório")
     data_nasc: Optional[date] = None
     telefone: Optional[str] = Field(default=None, max_length=15)
     telefone_sec: Optional[str] = Field(default=None, max_length=15)
@@ -98,13 +98,40 @@ class UsuarioRegisterSchema(BaseModel):
 
     @field_validator("cpf")
     @classmethod
-    def validar_cpf(cls, v: Optional[str]) -> Optional[str]:
-        if v:
-            limpo = re.sub(r"\D", "", v)
-            if len(limpo) != 11:
-                raise ValueError("O CPF deve conter exatamente 11 dígitos numéricos.")
-            return limpo
-        return None
+    def validar_cpf(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("O CPF é obrigatório.")
+        limpo = re.sub(r"\D", "", v.strip())
+        if len(limpo) != 11 or len(set(limpo)) == 1:
+            raise ValueError("O CPF deve conter exatamente 11 dígitos numéricos válidos.")
+        
+        # Algoritmo dos dígitos verificadores (módulo 11)
+        soma = sum(int(limpo[i]) * (10 - i) for i in range(9))
+        resto = (soma * 10) % 11
+        d1 = 0 if resto in (10, 11) else resto
+        if d1 != int(limpo[9]):
+            raise ValueError("CPF com primeiro dígito verificador inválido.")
+
+        soma = sum(int(limpo[i]) * (11 - i) for i in range(10))
+        resto = (soma * 10) % 11
+        d2 = 0 if resto in (10, 11) else resto
+        if d2 != int(limpo[10]):
+            raise ValueError("CPF com segundo dígito verificador inválido.")
+
+        return limpo
+
+    @field_validator("rg")
+    @classmethod
+    def validar_rg(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("O RG é obrigatório.")
+        rg_limpo = v.strip().upper()
+        # Valida que possui caracteres válidos e extensão entre 5 e 30
+        caracteres_uteis = re.sub(r"[^0-9X]", "", rg_limpo)
+        if len(caracteres_uteis) < 5 or len(caracteres_uteis) > 14:
+            raise ValueError("O RG deve conter entre 5 e 14 caracteres alfanuméricos úteis.")
+        return rg_limpo
+
 
     @field_validator("telefone", "telefone_sec")
     @classmethod

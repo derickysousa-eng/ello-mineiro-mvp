@@ -45,9 +45,11 @@ flowchart LR
 ### Onde hospedar o MySQL (grátis)
 | Serviço | Observação |
 |---|---|
-| **TiDB Cloud Serverless** (recomendado) | Compatível com MySQL, tier gratuito com armazenamento limitado |
+| **TiDB Cloud Serverless** (adotado em produção) | Compatível com MySQL, tier gratuito vitalício (5 GiB). Aloca `AUTO_INCREMENT` em lotes (`AUTO_ID_CACHE = 30000`) por sessão para evitar gargalos em arquitetura distribuída |
 | Aiven for MySQL (plano free) | MySQL "de verdade"; pode desligar por inatividade |
 | Railway / PlanetScale | Sem plano realmente gratuito atualmente — evitar |
+
+> **Nota Técnica (TiDB Serverless e AUTO_INCREMENT):** Por ser um banco NewSQL distribuído, o TiDB não gera IDs estritamente contíguos (1, 2, 3...) entre conexões distintas, mas aloca faixas de 30.000 IDs por sessão (`1`, `30001`, `60001`...). Isso garante alta performance distribuída sem comprometer a unicidade da Chave Primária nem a integridade das Chaves Estrangeiras.
 
 Plano B: migrar para **Neon (PostgreSQL)**; a mudança no script é pequena.
 

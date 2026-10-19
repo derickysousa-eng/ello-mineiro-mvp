@@ -50,6 +50,8 @@ A arquitetura do projeto foi projetada no modelo **Monólito Modular de Mesma Or
 | **Banco de Dados (DBaaS)** | **TiDB Cloud** | TiDB Serverless (AWS `us-east-1`) | Banco relacional distribuído NewSQL compatível com MySQL 8.0, escalável e de alta disponibilidade. |
 | **Comunicação de Dados** | **Internet Pública Segura** | TLS 1.3 / SSL Nativo | Todo o tráfego externo e interno trafega sobre canais criptografados. |
 
+> **Nota de Arquitetura Distribuída (AUTO_INCREMENT em Nuvem):** Por ser um banco NewSQL projetado para alta concorrência em múltiplos servidores, o TiDB Cloud aloca identificadores primários em lotes (`AUTO_ID_CACHE = 30000`) para cada sessão de conexão. Isso explica por que novos blocos de registros iniciam em `1`, `30001`, `60001` e `90001`, eliminando travas centrais de tabela sem quebrar a unicidade e a integridade referencial.
+
 ---
 
 ## 2. Padrão 12-Factor App: Zero Credenciais "Hardcoded" no Código

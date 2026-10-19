@@ -86,6 +86,17 @@ O banco de dados foi modelado em SQL puro no arquivo [database/seed.sql](file://
 
 ---
 
+### 2.2. Particularidade Técnica de Nuvem: O AUTO_INCREMENT no TiDB (Alocação em Lotes / Batch Cache)
+* **O Fenômeno Visual:** Ao executar `SELECT * FROM Usuarios;` no TiDB Cloud, nota-se que os IDs primários não seguem necessariamente a sequência contígua unitária (`1, 2, 3, 4`), apresentando saltos em blocos (ex: `1`, `30001`, `30002`, `30003`, `30004`, `60001`, `90001`).
+* **Por que isso acontece?**
+  * Em um **MySQL monolítico local** (como no XAMPP), uma única CPU gerencia a fila e entrega números de 1 em 1 através de travas (*locks*) de tabela.
+  * O **TiDB Cloud é um banco NewSQL distribuído**. Para suportar alta escala e evitar que milhares de conexões disputem uma trava central lenta, o TiDB aloca blocos de IDs em cache para cada sessão ativa (por padrão, blocos de 30.000 números: `AUTO_ID_CACHE = 30000`).
+  * **Comprovação prática:** Quando nossa bateria de testes automatizados ([test_api.py](file:///c:/Users/israe/Documents/ESTUDOS%20PROGRAMA%C3%87%C3%83O%20WEB/projeto-grau-tec/ello-mineiro-mvp/test_api.py)) rodou, ela recebeu uma faixa de lote e inseriu de forma perfeitamente consecutiva os IDs `30001`, `30002`, `30003` e `30004`. Conexões posteriores do Render receberam os blocos `60001` e `90001`.
+* **Integridade Relacional Perfeita:** Isso **não é um erro**. Na modelagem de dados, a Chave Primária precisa ser exclusivamente **única e imutável**. O relacionamento 1:N com a tabela `Endereco` opera com 100% de integridade (o endereço do aluno 60001 aponta exatamente para `usuario_id = 60001`).
+* **Destaque Acadêmico para a Apresentação:** Explicar esse comportamento perante a banca evidencia domínio avançado sobre arquitetura de dados distribuídos em nuvem.
+
+---
+
 ## 3. Por Que Escolhemos SQL Puro com PyMySQL (Sem ORMs Pesados)?
 
 Muitos projetos usam bibliotecas chamadas ORMs (como SQLAlchemy ou Prisma), que traduzem código Python em comandos SQL por baixo dos panos. 

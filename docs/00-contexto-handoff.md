@@ -70,7 +70,8 @@ ello-mineiro-mvp/
 │   └── ello_mineiro_postman_collection.json # Collection nativa pronta para o Postman
 ├── docs-apresentacao/                     # Materiais de suporte e roteiros para banca
 │   ├── algoritmo-validacao-cpf.md         # Fundamentação matemática do Módulo 11
-│   └── infraestrutura-e-seguranca.md      # Topologia Render + TiDB e segurança em camadas
+│   ├── infraestrutura-e-seguranca.md      # Topologia Render + TiDB e segurança em camadas
+│   └── guia-cadastro-usuario-guiado.md    # Roteiro passo a passo com geradores sintéticos homologados
 ├── database/
 │   └── seed.sql                           # Esquema MySQL com restrições e carga inicial
 ├── app/                                   # Backend FastAPI

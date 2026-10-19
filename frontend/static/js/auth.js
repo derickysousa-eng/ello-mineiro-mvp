@@ -250,6 +250,37 @@ function initCadastro() {
   const form = document.getElementById("cadastro-form");
   if (!form) return;
 
+  // 0. Validação de formato para Nome de Usuário (user_login)
+  const inputLogin = document.getElementById("user_login");
+  if (inputLogin) {
+    inputLogin.addEventListener("input", () => {
+      const val = inputLogin.value.trim();
+      if (!val) {
+        setFieldFeedback("user_login", null);
+      } else if (!/^[a-zA-Z0-9._]{3,30}$/.test(val)) {
+        setFieldFeedback("user_login", false, "Use entre 3 e 30 caracteres (apenas letras, números, ponto ou _).");
+      } else {
+        setFieldFeedback("user_login", true, "Formato de usuário válido.");
+      }
+    });
+  }
+
+  // 0.1. Validação em tempo real para E-mail
+  const inputEmail = document.getElementById("email");
+  if (inputEmail) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    inputEmail.addEventListener("input", () => {
+      const val = inputEmail.value.trim();
+      if (!val) {
+        setFieldFeedback("email", null);
+      } else if (!emailRegex.test(val)) {
+        setFieldFeedback("email", false, "Insira um e-mail válido (ex: seu.nome@exemplo.com).");
+      } else {
+        setFieldFeedback("email", true, "E-mail em formato válido.");
+      }
+    });
+  }
+
   // 1. Title Case inteligente no nome completo (blur e submit)
   const inputNome = document.getElementById("nome");
   if (inputNome) {
@@ -449,6 +480,21 @@ function initCadastro() {
       return;
     }
 
+    if (!/^[a-zA-Z0-9._]{3,30}$/.test(userLogin)) {
+      showAlert("cadastro-alert", "error", "O nome de usuário deve conter entre 3 e 30 caracteres (somente letras, números, ponto ou sublinhado).");
+      const el = document.getElementById("user_login");
+      if (el) el.focus();
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showAlert("cadastro-alert", "error", "O e-mail informado é inválido. Digite um formato válido contendo '@' e domínio (exemplo: usuario@dominio.com).");
+      const el = document.getElementById("email");
+      if (el) el.focus();
+      return;
+    }
+
     if (senha.length < 8) {
       showAlert("cadastro-alert", "error", "A senha deve conter no mínimo 8 caracteres.");
       return;
@@ -535,10 +581,28 @@ function initCadastro() {
         showAlert("cadastro-alert", "error", data.detail || "Nome de usuário ou e-mail já cadastrado.");
       } else if (response.status === 422) {
         let msg = "Dados inválidos: ";
-        if (Array.isArray(data.detail)) {
-          msg += data.detail.map((e) => e.msg).join(", ");
+        if (typeof data.detail === "string") {
+          let detalhe = data.detail.replace(/^Value error,\s*/i, "");
+          if (detalhe.includes("value is not a valid email address")) {
+            detalhe = "O e-mail informado é inválido. Certifique-se de incluir um formato correto (exemplo: usuario@dominio.com).";
+          }
+          msg = detalhe;
+        } else if (Array.isArray(data.detail)) {
+          const errosAmigaveis = data.detail.map((e) => {
+            let m = e.msg || "";
+            m = m.replace(/^Value error,\s*/i, "");
+            if (m.includes("value is not a valid email address") || (e.loc && e.loc.includes("email"))) {
+              return "E-mail em formato inválido (exemplo: usuario@dominio.com)";
+            }
+            if (e.type && e.type.includes("missing")) {
+              const campo = e.loc ? e.loc[e.loc.length - 1] : "campo";
+              return `O campo '${campo}' é obrigatório`;
+            }
+            return m;
+          });
+          msg = errosAmigaveis.join(" | ");
         } else {
-          msg += data.detail || "Verifique os dados preenchidos.";
+          msg = "Verifique os dados preenchidos no formulário e tente novamente.";
         }
         showAlert("cadastro-alert", "error", msg);
       } else if (response.status === 429) {

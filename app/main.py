@@ -6,8 +6,9 @@ Ponto de entrada principal da aplicação FastAPI.
 """
 
 import os
-from fastapi import FastAPI, HTTPException, status
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.db import get_raw_connection
 from app.routers.auth import router as auth_router
@@ -22,6 +23,64 @@ app = FastAPI(
 # Registra os roteadores da API sob o prefixo /api
 app.include_router(auth_router, prefix="/api")
 app.include_router(me_router, prefix="/api")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Traduz erros técnicos de validação do Pydantic para mensagens claras e amigáveis em português.
+    """
+    mapa_campos = {
+        "user_login": "Nome de Usuário",
+        "email": "E-mail",
+        "senha": "Senha",
+        "nome": "Nome Completo",
+        "genero": "Gênero",
+        "cpf": "CPF",
+        "rg": "RG",
+        "data_nasc": "Data de Nascimento",
+        "telefone": "Telefone Celular",
+        "telefone_sec": "Telefone Secundário",
+        "endereco": "Endereço",
+        "cep": "CEP",
+        "rua": "Logradouro/Rua",
+        "numero": "Número",
+        "bairro": "Bairro",
+        "complemento": "Complemento",
+        "cidade": "Cidade",
+        "uf": "Estado (UF)"
+    }
+
+    erros_amigaveis = []
+    for erro in exc.errors():
+        loc = erro.get("loc", [])
+        campo_raw = str(loc[-1]) if loc else "campo"
+        campo_nome = mapa_campos.get(campo_raw, campo_raw)
+        tipo = erro.get("type", "")
+        msg_original = erro.get("msg", "")
+
+        if "value is not a valid email address" in msg_original or tipo.startswith("value_error.email") or campo_raw == "email":
+            erros_amigaveis.append("O e-mail informado é inválido. Certifique-se de incluir um formato correto (exemplo: usuario@dominio.com).")
+        elif "missing" in tipo or "Field required" in msg_original:
+            erros_amigaveis.append(f"O campo '{campo_nome}' é obrigatório.")
+        elif "string_too_short" in tipo:
+            min_len = erro.get("ctx", {}).get("min_length", "")
+            erros_amigaveis.append(f"O campo '{campo_nome}' deve ter no mínimo {min_len} caracteres.")
+        elif "string_too_long" in tipo:
+            max_len = erro.get("ctx", {}).get("max_length", "")
+            erros_amigaveis.append(f"O campo '{campo_nome}' deve ter no máximo {max_len} caracteres.")
+        elif msg_original.startswith("Value error, "):
+            erros_amigaveis.append(msg_original.replace("Value error, ", "").strip())
+        else:
+            erros_amigaveis.append(f"Valor inválido para o campo '{campo_nome}'.")
+
+    # Retorna mensagem amigável consolidada
+    mensagem_final = " | ".join(dict.fromkeys(erros_amigaveis)) if erros_amigaveis else "Dados informados são inválidos. Por favor, revise os campos."
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": mensagem_final}
+    )
+
 
 # Monta diretório de arquivos estáticos (CSS, JS, imagens)
 frontend_static_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "static")

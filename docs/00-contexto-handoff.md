@@ -69,8 +69,10 @@ ello-mineiro-mvp/
 │   ├── kanban.md                          # Quadro Kanban oficial integrado ao Obsidian
 │   └── ello_mineiro_postman_collection.json # Collection nativa pronta para o Postman
 ├── docs-apresentacao/                     # Materiais de suporte e roteiros para banca
-│   ├── algoritmo-validacao-cpf.md         # Fundamentação matemática do Módulo 11
+│   ├── apresentacao-frontend.md           # Interface, UX, bibliotecas e integração ViaCEP
+│   ├── apresentacao-backend-e-banco.md    # Arquitetura FastAPI, CRUD, SQL puro e transações
 │   ├── infraestrutura-e-seguranca.md      # Topologia Render + TiDB e segurança em camadas
+│   ├── algoritmo-validacao-cpf.md         # Fundamentação matemática do Módulo 11
 │   └── guia-cadastro-usuario-guiado.md    # Roteiro passo a passo com geradores sintéticos homologados
 ├── database/
 │   └── seed.sql                           # Esquema MySQL com restrições e carga inicial

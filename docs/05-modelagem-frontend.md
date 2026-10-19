@@ -83,6 +83,10 @@
 * **CPF e CEP:**
   * O CPF é exibido como `000.000.000-00`, mas enviado limpo com 11 dígitos (`"12345678901"`).
   * O CEP é exibido como `00000-000`, mas enviado limpo com 8 dígitos (`"30110000"`).
+* **RG (Registro Geral):**
+  * Aplica autoformatação progressiva por Regex no evento `input` (`mascaraRG`), aceitando dígitos `0-9` e `X` exclusivamente na posição final.
+  * Formata progressivamente desde o padrão sudeste (`00.000.000-X`) até o padrão amplo de 13 dígitos (`00.000.000.000-X`), garantindo compatibilidade com o teto de estados como o Rio Grande do Norte (RN).
+  * Proteção no Dashboard: no painel autenticado, o RG e o CPF recebem bloqueio visual de privacidade (`formatarRgPrivacidade` e `formatarCpfPrivacidade`), nunca expondo documentos pessoais sensíveis em texto claro.
 
 ### 3.2. Capitalização de Nome Próprio (Title Case) e Tratativa de Complicações
 * **Regra de Negócio:**

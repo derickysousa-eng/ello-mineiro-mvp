@@ -1,14 +1,15 @@
 /**
  * =====================================================================
- * Escola Particular Ello Mineiro — Script do Painel Acadêmico (home.js)
- * Implementa a guarda de rotas (Route Guard), carregamento dinâmico de perfil
- * e encerramento seguro de sessão (Logout).
+ * Escola Particular Ello Mineiro — Script do Painel Institucional (home.js)
+ * Gerencia a guarda de rotas (Route Guard), mascaramento de dados sensíveis (CPF e RG),
+ * visibilidade condicional de menus e controle de permissões de acesso.
  * =====================================================================
  */
 
 document.addEventListener("DOMContentLoaded", () => {
   carregarDadosUsuario();
   initLogout();
+  initModalPermissaoOutsideClick();
 });
 
 /**
@@ -22,14 +23,46 @@ function formatarDataBR(dataIso) {
 }
 
 /**
- * Formata CPF com máscara e proteção de privacidade (ex: 123.***.***-01)
+ * Formata CPF com proteção visual de privacidade (ex: 123.***.***-01)
  */
 function formatarCpfPrivacidade(cpf) {
   if (!cpf) return "Não informado";
   const limpo = cpf.replace(/\D/g, "");
-  if (limpo.length !== 11) return cpf;
+  if (limpo.length !== 11) return "***.***.***-**";
   return `${limpo.slice(0, 3)}.***.***-${limpo.slice(9, 11)}`;
 }
+
+/**
+ * Formata RG com proteção visual de privacidade (ex: 12.***-9 ou MG-78.***-1),
+ * preservando a sigla do estado caso exista e ocultando os dígitos centrais.
+ */
+function formatarRgPrivacidade(rg) {
+  if (!rg) return "Não informado";
+  const str = rg.toString().trim().toUpperCase();
+
+  // Detecta se começa com sigla de estado (ex: MG, SP, RJ, etc.)
+  const matchUf = str.match(/^([A-Z]{2})[\s\-.]*(.*)$/);
+  let prefixoUf = "";
+  let corpo = str;
+
+  if (matchUf) {
+    prefixoUf = `${matchUf[1]}-`;
+    corpo = matchUf[2];
+  }
+
+  // Extrai apenas dígitos numéricos e a letra X
+  const clean = corpo.replace(/[^0-9X]/g, "");
+  if (!clean) return str;
+
+  if (clean.length <= 4) {
+    return `${prefixoUf}**.***`;
+  }
+
+  const inicio = clean.slice(0, 2);
+  const fim = clean.slice(-1);
+  return `${prefixoUf}${inicio}.***-${fim}`;
+}
+
 
 /**
  * Formata telefone brasileiro para exibição
@@ -84,29 +117,40 @@ async function carregarDadosUsuario() {
 }
 
 /**
- * Preenche a interface com os dados do usuário autenticado.
+ * Preenche a interface com os dados do usuário autenticado e ajusta menus contextuais.
  */
 function preencherDashboard(u) {
   // Cabeçalho e Saudação
   const elSaudacao = document.getElementById("usuario-saudacao");
   if (elSaudacao) {
-    const primeiroNome = u.nome ? u.nome.split(" ")[0] : "Acadêmico";
+    const primeiroNome = u.nome ? u.nome.split(" ")[0] : "Usuário";
     elSaudacao.textContent = `Olá, ${primeiroNome}!`;
   }
 
   const elBadge = document.getElementById("usuario-perfil-badge");
   if (elBadge) {
-    elBadge.textContent = u.permissao_nome || "Aluno";
+    elBadge.textContent = u.permissao_nome || "Usuário";
   }
 
-  // Card 1: Perfil do Usuário
+  // Ocultação/Exibição condicional do menu Notas (apenas para 'Professor' ou 'Aluno')
+  const menuNotas = document.getElementById("menu-notas");
+  if (menuNotas) {
+    const perm = (u.permissao_nome || "").toLowerCase();
+    if (perm === "professor" || perm === "aluno") {
+      menuNotas.style.display = "block";
+    } else {
+      menuNotas.style.display = "none";
+    }
+  }
+
+  // Card 1: Perfil do Usuário com Proteção de Dados Pessoais (CPF e RG)
   document.getElementById("perfil-nome").textContent = u.nome || "—";
   document.getElementById("perfil-login").textContent = `@${u.user_login}`;
   document.getElementById("perfil-email").textContent = u.email || "—";
   document.getElementById("perfil-genero").textContent = u.genero || "Não informado";
   document.getElementById("perfil-nasc").textContent = formatarDataBR(u.data_nasc);
   document.getElementById("perfil-cpf").textContent = formatarCpfPrivacidade(u.cpf);
-  document.getElementById("perfil-rg").textContent = u.rg || "Não informado";
+  document.getElementById("perfil-rg").textContent = formatarRgPrivacidade(u.rg);
   document.getElementById("perfil-telefone").textContent = formatarTelefoneVisual(u.telefone);
   document.getElementById("perfil-telefone-sec").textContent = formatarTelefoneVisual(u.telefone_sec);
   document.getElementById("perfil-status").textContent = u.ativo ? "Conta Ativa" : "Inativo";
@@ -124,6 +168,30 @@ function preencherDashboard(u) {
     document.getElementById("endereco-situacao").textContent = end.situacao || "ATIVO";
   } else {
     document.getElementById("endereco-rua").textContent = "Nenhum endereço cadastrado";
+  }
+}
+
+/**
+ * Controle de Abertura e Fechamento do Modal de Permissões
+ */
+window.abrirAvisoPermissao = function () {
+  const modal = document.getElementById("modal-permissoes");
+  if (modal) modal.style.display = "flex";
+};
+
+window.fecharAvisoPermissao = function () {
+  const modal = document.getElementById("modal-permissoes");
+  if (modal) modal.style.display = "none";
+};
+
+function initModalPermissaoOutsideClick() {
+  const modal = document.getElementById("modal-permissoes");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    });
   }
 }
 

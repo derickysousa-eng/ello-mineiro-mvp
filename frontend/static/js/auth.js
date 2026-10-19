@@ -102,6 +102,39 @@ function mascaraCEP(valor) {
 }
 
 /**
+ * Aplica máscara dinâmica de RG com Regex (de 7 até 13 dígitos, permitindo dígito verificador X).
+ * Atende aos padrões estaduais (MG 8 dígitos, SP 9 dígitos e RN com até 13 caracteres).
+ */
+function mascaraRG(valor) {
+  // Converte para maiúsculas e remove qualquer caractere que não seja número ou X
+  let clean = valor.toUpperCase().replace(/[^0-9X]/g, "");
+  
+  // Se contiver X, só permite na última posição
+  if (clean.indexOf("X") !== -1 && clean.indexOf("X") !== clean.length - 1) {
+    clean = clean.replace(/X/g, "");
+  }
+  
+  // Limitação máxima de 13 caracteres alfanuméricos úteis (teto de documentos como RN)
+  clean = clean.slice(0, 13);
+  const len = clean.length;
+  
+  if (len <= 2) return clean;
+  if (len <= 5) return `${clean.slice(0, 2)}.${clean.slice(2)}`;
+  if (len <= 8) return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5)}`;
+  if (len === 9) {
+    // Padrão clássico: 00.000.000-X
+    return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}-${clean.slice(8)}`;
+  }
+  if (len <= 11) {
+    // Formato estendido (10 ou 11 dígitos): 00.000.000.00-X
+    return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}.${clean.slice(8, len - 1)}-${clean.slice(len - 1)}`;
+  }
+  // Formato amplo até 13 dígitos (ex: RN): 00.000.000.000-X
+  return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}.${clean.slice(8, len - 1)}-${clean.slice(len - 1)}`;
+}
+
+
+/**
  * Exibe mensagem de feedback visual em um campo.
  */
 function setFieldFeedback(fieldId, isValid, message = "") {
@@ -248,6 +281,23 @@ function initCadastro() {
       }
     });
   }
+
+  // 2.1. Máscara e validação em tempo real de RG (Regex com suporte de 7 a 13 dígitos)
+  const inputRg = document.getElementById("rg");
+  if (inputRg) {
+    inputRg.addEventListener("input", (e) => {
+      e.target.value = mascaraRG(e.target.value);
+      const cleanRg = e.target.value.toUpperCase().replace(/[^0-9X]/g, "");
+      if (cleanRg.length >= 7 && cleanRg.length <= 13) {
+        setFieldFeedback("rg", true, "RG no formato válido.");
+      } else if (cleanRg.length > 0) {
+        setFieldFeedback("rg", false, "O RG deve conter entre 7 e 13 dígitos.");
+      } else {
+        setFieldFeedback("rg", null);
+      }
+    });
+  }
+
 
   // 3. Máscaras adaptativas de Telefone
   ["telefone", "telefone_sec"].forEach((id) => {

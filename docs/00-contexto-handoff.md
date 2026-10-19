@@ -44,12 +44,13 @@
 
 ---
 
-## 4. Próxima Etapa de Execução (Passo 5 — Banco em Nuvem e Deploy)
+## 4. Status de Produção (Passo 5 — Banco em Nuvem e Deploy Concluídos)
 
-Com a API, as validações de CPF/RG obrigatórios (`NOT NULL`), o banco local e todo o front-end estático finalizados e testados com 100% de sucesso:
-1. **Banco na Nuvem (TiDB Cloud Serverless):** Criação da instância serverless gratuita do TiDB (compatível com MySQL), execução do `database/seed.sql` atualizado e teste de conexão via string remota com SSL obrigatório.
-2. **Deploy Único no Render:** Configurar repositório no Render Web Service com variáveis de ambiente (`DB_*`, `JWT_SECRET_KEY`, `API_KEY`) e comando de inicialização `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-
+A aplicação encontra-se **100% implantada e operando em produção**:
+1. **Banco na Nuvem (TiDB Cloud Serverless):** Cluster NewSQL distribuído (`AWS us-east-1`) provisionado e homologado, com o esquema `database/seed.sql` em execução e conexão segura via TLS (`DB_SSL=true`).
+2. **Deploy Único no Render:** Web Service configurado via container Linux com `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Variáveis de ambiente protegidas no painel do Render (sem credenciais hardcoded).
+3. **Ambiente Local e Nuvem Sincronizados:** Tanto o ambiente local quanto a instância de produção conectam de forma estável e segura ao banco em nuvem.
+4. **Materiais de Apresentação:** Pasta `docs-apresentacao/` criada contendo guias autoexplicativos de validação de CPF e arquitetura de infraestrutura/segurança.
 
 ---
 
@@ -57,7 +58,7 @@ Com a API, as validações de CPF/RG obrigatórios (`NOT NULL`), o banco local e
 
 ```
 ello-mineiro-mvp/
-├── docs/                                  # Documentação completa
+├── docs/                                  # Documentação completa de engenharia
 │   ├── 00-contexto-handoff.md             # Este arquivo (passagem de bastão)
 │   ├── 01-requisitos.md                   # Requisitos funcionais, não funcionais e regras
 │   ├── 02-decisoes-arquitetura.md         # Decisões de stack, deploy único e SQL puro
@@ -67,20 +68,23 @@ ello-mineiro-mvp/
 │   ├── 06-arquitetura-servidor-e-rotas.md # Lógica do main.py, rotas estáticas e centralização CSS
 │   ├── kanban.md                          # Quadro Kanban oficial integrado ao Obsidian
 │   └── ello_mineiro_postman_collection.json # Collection nativa pronta para o Postman
+├── docs-apresentacao/                     # Materiais de suporte e roteiros para banca
+│   ├── algoritmo-validacao-cpf.md         # Fundamentação matemática do Módulo 11
+│   └── infraestrutura-e-seguranca.md      # Topologia Render + TiDB e segurança em camadas
 ├── database/
 │   └── seed.sql                           # Esquema MySQL com restrições e carga inicial
 ├── app/                                   # Backend FastAPI
-│   ├── main.py                            # Ponto de entrada, rotas estáticas (/, /cadastro, /home, /recuperacao)
-│   ├── db.py                              # Conexão PyMySQL pura parametrizada
+│   ├── main.py                            # Ponto de entrada, rotas estáticas e handler amigável 422
+│   ├── db.py                              # Conexão PyMySQL com suporte a SSL nativo
 │   ├── security.py                        # Argon2id e PyJWT
 │   ├── security_guards.py                 # Validação de X-API-Key, mesma origem e Rate Limiting
 │   ├── schemas.py                         # Validações com Pydantic v2
 │   ├── dependencies.py                    # Leitura segura de cookie HttpOnly
 │   ├── repositories/                      # usuarios.py e enderecos.py (SQL puro)
 │   └── routers/                           # auth.py e me.py
-├── frontend/                              # Interface web de produção
+├── frontend/                              # Interface web de produção (Same-Origin)
 │   ├── index.html                         # Login (GET /)
-│   ├── cadastro.html                      # Cadastro com ViaCEP (GET /cadastro)
+│   ├── cadastro.html                      # Cadastro com ViaCEP e feedback em tempo real (GET /cadastro)
 │   ├── home.html                          # Dashboard do aluno (GET /home)
 │   ├── recuperacao.html                   # Recuperação de senha (GET /recuperacao)
 │   ├── static/                            # Arquivos estáticos servidos pelo backend
@@ -98,7 +102,8 @@ ello-mineiro-mvp/
 
 ---
 
-## 6. Prompt para Iniciar a Próxima Sessão no Chat
+## 6. Próximos Passos (Apresentação e Pós-MVP)
 
-> "Leia `docs/00-contexto-handoff.md`, `docs/06-arquitetura-servidor-e-rotas.md` e `docs/kanban.md`. O backend FastAPI com SQL puro, as validações de CPF e RG obrigatórios (NOT NULL) em todas as camadas, as proteções de segurança e o front-end web completo estão 100% implementados e homologados por 11 testes automatizados. Vamos iniciar a configuração do banco na nuvem (TiDB Cloud Serverless) e o deploy no Render."
+1. Apresentação do projeto acadêmico utilizando o roteiro estruturado em `docs-apresentacao/infraestrutura-e-seguranca.md` e `docs-apresentacao/algoritmo-validacao-cpf.md`.
+2. Implementações futuras previstas no `docs/03-regras-futuras.md`: painel administrativo para atribuição de matrículas e fluxo completo de recuperação de senha por e-mail.
 

@@ -7,9 +7,6 @@ kanban-plugin: board
 ## Backlog
 
 - [ ] Testes de usabilidade e responsividade completa (Mobile, Tablet, Desktop) #frontend
-- [ ] Criação e homologação do cluster no TiDB Cloud Serverless (MySQL em nuvem) #banco #producao
-- [ ] Configuração de deploy único no Render (FastAPI servindo front e API na mesma URL) #deploy #producao
-- [ ] Validação de ponta a ponta em produção com HTTPS e cookie `Secure=True` #seguranca
 - [ ] Regras Pós-MVP: Painel administrativo para atribuição de perfis (Aluno, Professor) e matrícula (doc 03) #futuro
 - [ ] Implementar fluxo de backend para envio de e-mail e validação de token em `frontend/recuperacao.html` #futuro #backend
 - [ ] Implementar Soft Delete para Usuários (Data de Desligamento) #futuro
@@ -19,16 +16,16 @@ kanban-plugin: board
 
 ## A fazer
 
-- [ ] Criação e homologação do cluster no TiDB Cloud Serverless (MySQL em nuvem) #banco #producao
-- [ ] Configuração de deploy único no Render (FastAPI servindo front e API na mesma URL) #deploy #producao
-
 
 ## Em andamento
 
 
-
 ## Feito
 
+- [x] Criação e homologação do cluster no TiDB Cloud Serverless (MySQL em nuvem AWS us-east-1) com TLS #banco #producao
+- [x] Configuração de deploy único no Render (FastAPI servindo front e API na mesma URL) com segredos protegidos #deploy #producao
+- [x] Validação de ponta a ponta em produção com HTTPS e cookie `Secure=True` #seguranca
+- [x] Documentação técnica de apresentação da infraestrutura e segurança em `docs-apresentacao/infraestrutura-e-seguranca.md` #docs
 - [x] Obrigatoriedade de CPF e RG (NOT NULL e UNIQUE) implementada no seed.sql, schemas Pydantic (módulo 11), front-end e testes #banco #backend #frontend
 - [x] Centralização e acompanhamento do fluxo de desenvolvimento via quadro Kanban #gestao
 - [x] Modelagem do banco MySQL (`database/seed.sql`) com tabelas Permissoes, Usuarios e Endereco #banco
